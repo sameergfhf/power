@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div id="animated-bg" class="animated-bg"></div>
+    
+    <div class="container">
+        <div id="form-card" class="form-card">
+            <div class="form-header">
+                <h1>{{ title }}</h1>
+                <p>Please provide detailed information to help with recovery.</p>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="add-item-form">
+                {% csrf_token %}
+                <div class="form-content">
+                    <div class="form-group">
+                        <label for="id_item_type">Item Type*</label>
+                        {{ form.item_type }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_name">Item Name*</label>
+                        {{ form.name }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_category">Category*</label>
+                        {{ form.category }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_date_lost_found">Date Found/Lost*</label>
+                        {{ form.date_lost_found }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_time_lost_found">Time Found/Lost (Approximate)</label>
+                        {{ form.time_lost_found }}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="id_location">Location Found/Lost*</label>
+                        {{ form.location }}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="id_description">Item Description*</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Item Photos</label>
+                        <div class="file-upload">
+                            {{ image_form.image }}
+                            <i>📷</i>
+                            <p>Drag & drop photos or click to upload</p>
+                            <span>Upload up to 5 images</span>
+                        </div>
+                        <div class="thumbnail-preview" id="photo-preview">
+                            {% if item and item.images.all %}
+                                {% for image in item.images.all %}
+                                    <div class="thumbnail-container">
+                                        <img src="{{ image.image.url }}" class="thumbnail">
+                                        <button type="button" class="remove-image" data-id="{{ image.id }}">×</button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_contact_name">Your Name*</label>
+                        {{ form.contact_name }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_contact_phone">Phone Number*</label>
+                        {{ form.contact_phone }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_contact_email">Email Address*</label>
+                        {{ form.contact_email }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_preferred_contact">Preferred Contact Method</label>
+                        {{ form.preferred_contact }}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="id_additional_notes">Additional Notes</label>
+                        {{ form.additional_notes }}
+                    </div>
+                </div>
+                
+                <form method="POST" action="{% url 'add_item' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" id="submit-btn">
+                        <span class="spinner"></span>
+                        <span>Submit Item</span>
+                    </button>
+                </form>
+                
+                <button type="reset" class="btn btn-secondary">Clear Form</button>
+                
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="success-message" id="success-message">
+    Item successfully added to the database!
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate the form card
+        gsap.to("#form-card", {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out"
+        });
+        
+        // Animate form groups with staggered delay
+        gsap.to(".form-group", {
+            opacity: 1,
+            x: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power1.out",
+            delay: 0.3
+        });
+        
+        // Create animated background
+        const animatedBg = document.getElementById('animated-bg');
+        for (let i = 0; i < 6; i++) {
+            const circle = document.createElement('div');
+            circle.classList.add('bg-circle');
+            
+            // Random size between 200px and 500px
+            const size = Math.random() * 400 + 200;
+            circle.style.width = `${size}px`;
+            circle.style.height = `${size}px`;
+            
+            // Random position
+            circle.style.left = `${Math.random() * 100}%`;
+            circle.style.top = `${Math.random() * 100}%`;
+            
+            animatedBg.appendChild(circle);
+            
+            // Animate each circle
+            anime({
+                targets: circle,
+                translateX: function() { return anime.random(-300, 300); },
+                translateY: function() { return anime.random(-300, 300); },
+                scale: function() { return anime.random(0.8, 1.5); },
+                opacity: function() { return anime.random(0.05, 0.15); },
+                duration: function() { return anime.random(10000, 18000); },
+                direction: 'alternate',
+                loop: true,
+                easing: 'easeInOutQuad'
+            });
+        }
+        
+        // Handle file upload preview
+        const fileInput = document.querySelector('input[type="file"]');
+        const previewContainer = document.getElementById('photo-preview');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files) {
+                const maxFiles = 5;
+                const filesToShow = Array.from(this.files).slice(0, maxFiles);
+                
+                filesToShow.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const container = document.createElement('div');
+                        container.className = 'thumbnail-container';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('thumbnail');
+                        container.appendChild(img);
+                        
+                        previewContainer.appendChild(container);
+                        
+                        // Animate each thumbnail
+                        anime({
+                            targets: img,
+                            opacity: 1,
+                            scale: 1,
+                            duration: 300,
+                            delay: index * 100,
+                            easing: 'easeInOutSine'
+                        });
+                    }
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+        
+        // Handle image deletion
+        const removeButtons = document.querySelectorAll('.remove-image');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const imageId = this.getAttribute('data-id');
+                const container = this.parentElement;
+                
+                // Send AJAX request to delete the image
+                fetch(`/items/image/${imageId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        container.remove();
+                    } else {
+                        alert(data.message || 'Error deleting image');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Form submission animation
+        const form = document.getElementById('add-item-form');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        form.addEventListener('submit', function() {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

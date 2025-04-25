@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bid & Found{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --navy-primary: #0a192f;
+            --navy-secondary: #172a45;
+            --navy-light: #303c55;
+            --navy-lightest: #4a5568;
+            --accent-color: #64ffda;
+            --text-primary: #e6f1ff;
+            --text-secondary: #a8b2d1;
+        }
+        
+        p {
+  color: var(--accent-color);
+}
+i {
+  color: var(--accent-color);
+}
+
+h4 {
+  color: var(--accent-color);
+}
+h5 {
+  color: var(--accent-color);
+}
+label {
+  color: var(--accent-color);
+}
+
+        body {
+            background-color: var(--navy-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--navy-secondary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navbar-brand {
+            color: var(--accent-color) !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: var(--text-primary) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-color) !important;
+        }
+        
+        .card {
+            background-color: var(--navy-secondary);
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-title {
+            color: var(--accent-color);
+        }
+        
+        .card-text {
+            color: var(--text-secondary);
+        }
+        
+        .btn-primary {
+            background-color: var(--navy-lightest);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: transparent;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .btn-success:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .bg-navy-blue {
+            background-color: var(--navy-secondary);
+        }
+        
+        .bg-navy-blue-light {
+            background-color: var(--navy-light);
+        }
+        
+        .text-accent {
+            color: var(--accent-color);
+        }
+        
+        .form-control {
+            background-color: var(--navy-light);
+            border-color: var(--navy-lightest);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus {
+            background-color: var(--navy-light);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem rgba(100, 255, 218, 0.25);
+        }
+        
+        .time-remaining {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .notification-badge {
+            background-color: var(--accent-color);
+            color: var(--navy-primary);
+        }
+        
+        .bid-status-active {
+            color: #4caf50;
+        }
+        
+        .bid-status-sold {
+            color: var(--accent-color);
+        }
+        
+        .bid-status-expired {
+            color: #f44336;
+        }
+        
+        footer {
+            background-color: var(--navy-secondary);
+            color: var(--text-secondary);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+        
+        .loader {
+            border: 4px solid var(--navy-lightest);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .highlight {
+            animation: highlight 1s infinite alternate;
+        }
+        
+        @keyframes highlight {
+            from { color: var(--accent-color); }
+            to { color: #ff9800; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand animate__animated animate__fadeIn" href="{% url 'bidding_home' %}">
+                <i class="fas fa-gavel"></i> Bid & Found
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'bidding_home' %}active{% endif %}" href="{% url 'bidding_home' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'bid_item_list' %}active{% endif %}" href="{% url 'bid_item_list' %}">
+                            <i class="fas fa-list"></i> Browse Auctions
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'add_bid_item' %}active{% endif %}" href="{% url 'add_bid_item' %}">
+                                <i class="fas fa-plus-circle"></i> Add Bid Item
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative {% if request.resolver_match.url_name == 'bid_notifications' %}active{% endif %}" href="{% url 'bid_notifications' %}">
+                                <i class="fas fa-bell"></i> Notifications
+                                <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill notification-badge {% if unread_count > 0 %}d-inline{% else %}d-none{% endif %}">
+                                    <span id="unread-count">{{ unread_count|default:"0" }}</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark bg-navy-blue" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{% url 'my_bid_items' %}"><i class="fas fa-box"></i> My Items</a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_bids' %}"><i class="fas fa-gavel"></i> My Bids</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'profile_page' %}"><i class="fas fa-user-cog"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-accent">Bid & Found</h5>
+                    <p>A place to bid on lost items or list your found items for auction.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="text-accent">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'bidding_home' %}" class="text-secondary">Home</a></li>
+                        <li><a href="{% url 'bid_item_list' %}" class="text-secondary">Browse Auctions</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'add_bid_item' %}" class="text-secondary">Add Item</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="text-accent">Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope"></i> contact@bidandfound.com</li>
+                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <div class="text-center">
+                <p>&copy; {% now "Y" %} Bid & Found. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    {% if user.is_authenticated %}
+    <script>
+        checkNotifications();
+        setInterval(checkNotifications, 30000);
+    </script>
+    {% endif %}
+
+    <!-- Global JS -->
+    <script>
+        $(document).ready(function() {
+            function checkNotifications() {
+                $.ajax({
+                    url: '{% url "get_unread_notifications_count" %}',
+                    type: 'GET',
+                    success: function(data) {
+                        if (data.count > 0) {
+                            $('#unread-count').text(data.count);
+                            $('#notification-badge').removeClass('d-none').addClass('d-inline');
+                        } else {
+                            $('#notification-badge').removeClass('d-inline').addClass('d-none');
+                        }
+                    }
+                });
+            }
+            
+            function animateOnScroll() {
+                $('.animate-on-scroll').each(function() {
+                    const position = $(this).offset().top;
+                    const scroll = $(window).scrollTop();
+                    const windowHeight = $(window).height();
+                    
+                    if (scroll + windowHeight > position) {
+                        $(this).addClass('animate__animated animate__fadeInUp');
+                    }
+                });
+            }
+            
+            $(window).scroll(function() {
+                animateOnScroll();
+            });
+            
+            animateOnScroll();
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,600 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    :root {
+        --navy-darkest: #0d1b2a;
+        --navy-dark: #1b263b;
+        --navy-primary: #2c3e50;
+        --navy-light: #415a77;
+        --navy-accent: #3a86ff;
+        --navy-highlight: #4aa3df;
+        --text-light: #e0e1dd;
+        --text-muted: #bdc3c7;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+    }
+
+    #admin-content {
+        background-color: var(--navy-darkest);
+        color: var(--text-light);
+        padding: 20px 0;
+    }
+
+    .admin-header {
+        background-color: var(--navy-dark);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .admin-sidebar {
+        background-color: var(--navy-primary);
+        border-radius: 10px;
+        padding: 20px 0;
+        height: calc(50vh - 180px);
+        position: sticky;
+        top: 80px;
+    }
+
+    .sidebar-icon {
+        color: var(--text-light);
+        font-size: 1.5rem;
+        padding: 15px 0;
+        display: flex;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-icon:hover {
+        color: var(--navy-accent);
+        transform: translateY(-2px);
+    }
+
+    .admin-card {
+        background-color: var(--navy-light);
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .admin-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card {
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .percentage-up {
+        color: var(--success);
+    }
+
+    .percentage-down {
+        color: var(--danger);
+    }
+
+    .chart-container {
+        height: 200px;
+        position: relative;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .email-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .email-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .todo-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .todo-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--navy-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+
+    .meeting-card {
+        background-color: var(--navy-primary);
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .admin-search {
+        background-color: var(--navy-light);
+        border: none;
+        color: var(--text-light);
+        border-radius: 50px;
+        padding: 10px 20px;
+    }
+
+    .admin-search::placeholder {
+        color: var(--text-muted);
+    }
+
+    .search-button {
+        background-color: var(--navy-accent);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .admin-nav-link {
+        color: var(--text-light);
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav-link:hover {
+        background-color: var(--navy-accent);
+        color: white;
+    }
+
+    .task-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .task-actions a {
+        color: var(--text-light);
+        transition: all 0.2s ease;
+    }
+
+    .task-actions a:hover {
+        transform: scale(1.2);
+    }
+
+    .task-actions .complete-task:hover {
+        color: var(--success);
+    }
+
+    .task-actions .delete-task:hover {
+        color: var(--danger);
+    }
+
+    .add-task-form {
+        background-color: var(--navy-primary);
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .add-task-form input,
+    .add-task-form textarea {
+        background-color: var(--navy-dark);
+        border: 1px solid var(--navy-light);
+        color: var(--text-light);
+    }
+
+    .add-task-form input::placeholder,
+    .add-task-form textarea::placeholder {
+        color: var(--text-muted);
+    }
+
+    .add-task-btn {
+        background-color: var(--navy-accent);
+        color: white;
+        border: none;
+    }
+
+    .add-task-btn:hover {
+        background-color: var(--navy-highlight);
+    }
+
+    /* New styles for FAQ */
+    .faq-container {
+        margin-top: 20px;
+        background-color: var(--navy-light);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .faq-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .faq-header h5 {
+        color: var(--text-light);
+        margin: 0;
+    }
+
+    .faq-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .faq-item {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 10px 0;
+        color: var(--text-light);
+    }
+
+    .faq-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="admin-content">
+    <div class="row">
+        <div class="col-md-1">
+            <div class="admin-sidebar d-flex flex-column align-items-center">
+                <a href="{% url 'admin_dashboard' %}" class="sidebar-icon" title="Dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                </a>
+                <a href="{% url 'admin_view_all_users' %}" class="sidebar-icon" title="Users">
+                    <i class="fas fa-users"></i>
+                </a>
+                <a href="{% url 'admin_view_all_items' %}" class="sidebar-icon" title="Items">
+                    <i class="fas fa-box"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-11">
+            <div class="admin-header d-flex justify-content-between align-items-center">
+                <h2>Welcome back, {{ user.username }}!</h2>
+                <div class="d-flex align-items-center">
+                    <i class="far fa-bell me-4 fs-5"></i>
+                    <i class="far fa-envelope me-4 fs-5"></i>
+                    {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="Profile" class="rounded-circle"
+                        style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                    <img src="{% static 'img/default_avatar.png' %}" alt="Profile" class="rounded-circle"
+                        style="width: 40px; height: 40px; object-fit: cover;">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex">
+                    <input type="text" class="admin-search me-2" placeholder="Search for items, users...">
+                    <button class="search-button"><i class="fas fa-search text-white"></i></button>
+                </div>
+                <div class="d-flex">
+                    <a href="{% url 'admin_dashboard' %}" class="admin-nav-link me-2">Dashboard</a>
+                    <a href="{% url 'admin_view_all_users' %}" class="admin-nav-link me-2">Users</a>
+                    <a href="{% url 'admin_view_all_items' %}" class="admin-nav-link me-2">Items</a>
+                    <a href="{% url 'dashboard' %}" class="admin-nav-link">Bidding</a>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Users</span>
+                            <span class="percentage-up">+18.7%</span>
+                        </div>
+                        <div class="stat-number">{{ total_users }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Lost Items</span>
+                            <span class="percentage-up">+12.3%</span>
+                        </div>
+                        <div class="stat-number">{{ total_lost }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Found Items</span>
+                            <span class="percentage-up">+5.4%</span>
+                        </div>
+                        <div class="stat-number">{{ total_found }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Resolved Items</span>
+                            <span class="percentage-up">+7.2%</span>
+                        </div>
+                        <div class="stat-number">{{ resolved_items }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="admin-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5>User Activity</h5>
+                                <div>
+                                    <span class="me-3">Last 7 days VS prior week</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="activityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="admin-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Your to-do list</h5>
+                                <button class="btn btn-sm btn-outline-light" id="showAddTaskForm">
+                                    <i class="fas fa-plus"></i> Add Task
+                                </button>
+                            </div>
+
+                            <div class="add-task-form" id="addTaskForm" style="display: none;">
+                                <form action="{% url 'admin_add_task' %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" name="task_title" placeholder="Task title"
+                                            required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <textarea class="form-control" name="task_description" rows="2"
+                                            placeholder="Description (optional)"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Due Date</label>
+                                        <input type="date" class="form-control" name="due_date">
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-2"
+                                            id="cancelAddTask">Cancel</button>
+                                        <button type="submit" class="btn btn-sm add-task-btn">Add Task</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {% if admin_tasks %}
+                            {% for task in admin_tasks %}
+                            <div class="todo-item">
+                                <div class="todo-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div>{{ task.title }}</div>
+                                    {% if task.description %}
+                                    <small class="text-muted">{{ task.description }}</small>
+                                    {% endif %}
+                                    <small class="text-muted d-block">Due: {{ task.due_date|date:"M d" }} at
+                                        {{ task.due_date|time:"g:i A" }}</small>
+                                </div>
+                                <div class="task-actions">
+                                    <a href="{% url 'admin_complete_task' task.id %}" class="complete-task"
+                                        title="Mark as completed">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                    <a href="{% url 'admin_delete_task' task.id %}" class="delete-task"
+                                        title="Delete task">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center py-3">
+                                <p>No tasks in your to-do list</p>
+                            </div>
+                            {% endif %}
+
+                            <div class="meeting-card mt-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="me-2"><i class="fas fa-users"></i></div>
+                                    <div>Team meeting</div>
+                                </div>
+                                <div class="mb-2">{{ today|date:"M d" }} at 6:00 PM</div>
+                                <div class="text-muted">Monthly review of platform performance and upcoming features</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Recent users</h5>
+                        <a href="{% url 'admin_view_all_users' %}" class="btn btn-sm btn-outline-light">
+                            View All Users
+                        </a>
+                    </div>
+
+                    {% if recent_users %}
+                    {% for user_activity in recent_users %}
+                    <div class="email-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% if user_activity.user.profile.avatar %}
+                            <img src="{{ user_activity.user.profile.avatar.url }}" alt="User" class="user-avatar me-3">
+                            {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User" class="user-avatar me-3">
+                            {% endif %}
+                            <div>{{ user_activity.user.username }}</div>
+                        </div>
+                        <div>{{ user_activity.action }}</div>
+                        <div>{{ user_activity.timestamp|timesince }} ago</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p>No recent user activity</p>
+                    </div>
+                    {% endif %}   
+                </div>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-header">
+                    <h5>Frequently Asked Questions</h5>
+                    <a href="{% url 'questions' %}" class="btn btn-sm btn-outline-light">View All
+                        Questions</a>
+                </div>
+                <ul class="faq-list">
+                    {% for question in questions %}
+                    <li class="faq-item">
+                        {{ question.question }}
+                        <small class="text-muted">Submitted at: {{ question.submitted_at }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{{ week_days|json_script:"week-days-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize chart
+    // Initialize chart
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check if chart element exists before initializing
+        const chartElement = document.getElementById('activityChart');
+        if (chartElement) {
+            const ctx = chartElement.getContext('2d');
+
+            // Safely parse the data from Django
+            let thisWeekData = [];
+            let lastWeekData = [];
+
+            try {
+                thisWeekData = JSON.parse('{{ this_week_data|escapejs }}');
+                lastWeekData = JSON.parse('{{ last_week_data|escapejs }}');
+            } catch (e) {
+                console.error('Error parsing chart data:', e);
+                // Fallback data if parsing fails
+                thisWeekData = [0, 0, 0, 0, 0, 0, 0];
+                lastWeekData = [0, 0, 0, 0, 0, 0, 0];
+            }
+
+            // Create labels array from Django template
+            const labels = JSON.parse(document.getElementById('week-days-data').textContent);
+
+            // Initialize the chart with proper error handling
+            try {
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'This Week',
+                            data: thisWeekData,
+                            borderColor: '#3a86ff',
+                            backgroundColor: 'rgba(58, 134, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Last Week',
+                            data: lastWeekData,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: '#e0e1dd'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#e0e1dd'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#e0e1dd'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error creating chart:', e);
+            }
+        }
+
+        // Task form toggle with error handling
+        const showAddTaskBtn = document.getElementById('showAddTaskForm');
+        const addTaskForm = document.getElementById('addTaskForm');
+        const cancelAddTaskBtn = document.getElementById('cancelAddTask');
+
+        if (showAddTaskBtn && addTaskForm && cancelAddTaskBtn) {
+            showAddTaskBtn.addEventListener('click', function () {
+                addTaskForm.style.display = 'block';
+                showAddTaskBtn.style.display = 'none';
+            });
+
+            cancelAddTaskBtn.addEventListener('click', function () {
+                addTaskForm.style.display = 'none';
+                showAddTaskBtn.style.display = 'inline-block';
+            });
+        }
+    });
+</script>
+{% endblock %}

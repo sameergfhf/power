@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Item | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="animated-bg">
+        <div class="bg-circle" style="width: 600px; height: 600px; top: -200px; left: -200px;"></div>
+        <div class="bg-circle" style="width: 500px; height: 500px; bottom: -100px; right: -100px;"></div>
+    </div>
+    
+    <div class="container">
+        <div class="form-card animate-on-scroll fade-in">
+            <div class="form-header">
+                <h1>Update Item</h1>
+                <p>Update the information for your reported item.</p>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" id="item-form">
+                {% csrf_token %}
+                
+                <div class="form-content">
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">Item Name*</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="error">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.category.id_for_label }}">Category*</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="error">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.item_type.id_for_label }}">Item Type*</label>
+                        {{ form.item_type }}
+                        {% if form.item_type.errors %}
+                            <div class="error">{{ form.item_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.date_lost_found.id_for_label }}">Date Lost/Found*</label>
+                        {{ form.date_lost_found }}
+                        {% if form.date_lost_found.errors %}
+                            <div class="error">{{ form.date_lost_found.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.location.id_for_label }}">Location*</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="error">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.contact_method.id_for_label }}">Preferred Contact Method</label>
+                        {{ form.contact_method }}
+                        {% if form.contact_method.errors %}
+                            <div class="error">{{ form.contact_method.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.is_resolved.id_for_label }}">Item Status</label>
+                        {{ form.is_resolved }}
+                        {% if form.is_resolved.errors %}
+                            <div class="error">{{ form.is_resolved.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="{{ form.description.id_for_label }}">Description*</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="error">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Current Images</label>
+                        <div class="thumbnail-preview">
+                            {% for image in item.images.all %}
+                                <div class="thumbnail-container">
+                                    <img src="{{ image.image.url }}" class="thumbnail" style="opacity: 1; transform: scale(1);">
+                                    <button type="button" class="remove-image" data-id="{{ image.id }}">×</button>
+                                </div>
+                            {% empty %}
+                                <p>No images uploaded</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Add New Images</label>
+                        <div class="file-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop images here or click to browse</p>
+                            <span>You can upload up to 5 images (max 5MB each)</span>
+                            {{ form.images }}
+                            {% if form.images.errors %}
+                                <div class="error">{{ form.images.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="thumbnail-preview" id="image-preview"></div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <form method="POST" action="{% url 'update_item' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn primary-btn">Update Item</button>
+                    </form>                    
+                    <a href="{% url 'item_new' item.claim.id %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="success-message" id="success-message">
+    <i class="fas fa-check-circle"></i> Item updated successfully!
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File upload preview
+        const fileInput = document.querySelector('input[type="file"]');
+        const previewContainer = document.getElementById('image-preview');
+        
+        fileInput.addEventListener('change', function() {
+            previewContainer.innerHTML = '';
+            
+            if (this.files) {
+                Array.from(this.files).forEach(file => {
+                    if (!file.type.match('image.*')) return;
+                    
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const thumbnailContainer = document.createElement('div');
+                        thumbnailContainer.className = 'thumbnail-container';
+                        
+                        const thumbnail = document.createElement('img');
+                        thumbnail.className = 'thumbnail';
+                        thumbnail.src = e.target.result;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-image';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            thumbnailContainer.remove();
+                        });
+                        
+                        thumbnailContainer.appendChild(thumbnail);
+                        thumbnailContainer.appendChild(removeBtn);
+                        previewContainer.appendChild(thumbnailContainer);
+                        
+                        // Animate thumbnail
+                        setTimeout(() => {
+                            thumbnail.style.opacity = '1';
+                            thumbnail.style.transform = 'scale(1)';
+                        }, 100);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+        
+        // Delete existing images
+        const deleteButtons = document.querySelectorAll('.remove-image[data-id]');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const imageId = this.getAttribute('data-id');
+                const container = this.parentElement;
+                
+                // Send AJAX request to delete image
+                fetch(`/items/delete-image/${imageId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        container.remove();
+                    }
+                });
+            });
+        });
+        
+        // Form animation
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach((group, index) => {
+            setTimeout(() => {
+                group.style.opacity = '1';
+                group.style.transform = 'translateX(0)';
+            }, 100 * index);
+        });
+        
+        // Form card animation
+        const formCard = document.querySelector('.form-card');
+        setTimeout(() => {
+            formCard.style.opacity = '1';
+            formCard.style.transform = 'translateY(0)';
+        }, 300);
+    });
+</script>
+{% endblock %}

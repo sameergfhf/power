@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.name }} | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cards.css' %}">
+<link rel="stylesheet" href="{% static 'css/item_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="item-detail-container">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{% url 'main' %}">Home</a> &gt;
+            <a href="{% url 'item_list' %}">Items</a> &gt;
+            <span>{{ item.name }}</span>
+        </div>
+        
+        <div class="item-detail-card">
+            <div class="item-header">
+                <h1>{{ item.name }}</h1>
+                <div class="item-badge {% if item.item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                    {{ item.get_item_type_display }}
+                </div>
+            </div>
+            
+            <div class="item-content">
+                <div class="item-images">
+                    {% if item.images.all %}
+                        <div class="main-image">
+                            <img src="{{ item.images.first.image.url }}" alt="{{ item.name }}" id="main-image">
+                        </div>
+                        {% if item.images.count > 1 %}
+                            <div class="image-thumbnails">
+                                {% for image in item.images.all %}
+                                    <div class="thumbnail {% if forloop.first %}active{% endif %}" data-src="{{ image.image.url }}">
+                                        <img src="{{ image.image.url }}" alt="{{ item.name }} - Image {{ forloop.counter }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="no-image">
+                            <i class="fas fa-image"></i>
+                            <p>No image available</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="item-info">
+                    <div class="info-row">
+                        <span class="info-label">Category:</span>
+                        <span class="info-value">{{ item.get_category_display }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Location:</span>
+                        <span class="info-value">{{ item.location }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value">{{ item.date_lost_found }}</span>
+                    </div>
+                    {% if item.time_lost_found %}
+                    <div class="info-row">
+                        <span class="info-label">Time:</span>
+                        <span class="info-value">{{ item.time_lost_found }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Description:</span>
+                        <div class="info-value description">{{ item.description }}</div>
+                    </div>
+                    {% if item.additional_notes %}
+                    <div class="info-row">
+                        <span class="info-label">Additional Notes:</span>
+                        <div class="info-value">{{ item.additional_notes }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Contact:</span>
+                        <div class="info-value">
+                            <p>{{ item.contact_name }}</p>
+                            <p>{{ item.contact_email }}</p>
+                            <p>{{ item.contact_phone }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="item-actions">
+                        <button class="btn secondary-btn" id="contact-btn">
+                            <i class="fas fa-envelope"></i> Contact
+                        </button>
+                        
+                        {% if item.item_type == 'lost' %}
+                            <button class="btn primary-btn" id="found-btn">
+                                <i class="fas fa-hand-holding"></i> I Found This
+                            </button>
+                        {% else %}
+                            <button class="btn primary-btn" id="claim-btn">
+                                <i class="fas fa-hand-holding"></i> This Is Mine
+                            </button>
+                        {% endif %}
+                        
+                        {% if user == item.user or admin == item.admin %}
+                            <div class="owner-actions">
+                                <a href="{% url 'update_item' item.id %}" class="btn edit-btn">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'delete_item' item.id %}" class="btn delete-btn">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="similar-items">
+            <h2>Similar Items</h2>
+            <div class="cards-grid">
+                {% for similar_item in similar_items %}
+                    <div class="card">
+                        <div class="card-image" {% if similar_item.images.first %}style="background-image: url('{{ similar_item.images.first.image.url }}');"{% endif %}>
+                            {% if not similar_item.images.first %}<i class="fas fa-image"></i>{% endif %}
+                            <div class="card-badge {% if similar_item.item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                                {{ similar_item.get_item_type_display }}
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ similar_item.name }}</h3>
+                            <div class="card-info">
+                                <p><i class="fas fa-map-marker-alt"></i> {{ similar_item.location }}</p>
+                                <p><i class="fas fa-calendar-alt"></i> {{ similar_item.date_lost_found }}</p>
+                            </div>
+                            <p class="card-description">{{ similar_item.description|truncatechars:100 }}</p>
+                            <div class="card-actions">
+                                <a href="{% url 'item_new' item.claim.id %}" class="card-btn details-btn">
+                                    <i class="fas fa-info-circle"></i> Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="no-similar-items">No similar items found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal" id="contact-modal">
+    <div class="modal-content animate-modal">
+        <div class="modal-header">
+            <h2>Contact {{ item.contact_name }}</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="contact-form">
+                <div class="form-group">
+                    <label for="contact-name">Your Name</label>
+                    <input type="text" id="contact-name" required {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Your Email</label>
+                    <input type="email" id="contact-email" required {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" rows="5" required>Hello, I'm interested in your {{ item.get_item_type_display }} item "{{ item.name }}". Please contact me back.</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn secondary-btn" id="cancel-contact">Cancel</button>
+                    <button type="submit" class="btn primary-btn">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Found Item Modal -->
+<div class="modal" id="found-modal">
+    <div class="modal-content animate-modal">
+        <div class="modal-header">
+            <h2>I Found This Item</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="found-form" action="{% url 'submit_found_claim' item.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="found-name">Your Name</label>
+                    <input type="text" id="found-name" name="found_name" required {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="found-email">Your Email</label>
+                    <input type="email" id="found-email" name="found_email" required {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="found-phone">Your Phone</label>
+                    <input type="text" id="found-phone" name="found_phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="found-location">Where did you find this item?</label>
+                    <input type="text" id="found-location" name="found_location" required>
+                </div>
+                <div class="form-group">
+                    <label for="found-date">When did you find it?</label>
+                    <input type="date" id="found-date" name="found_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="found-description">Additional details about how you found it</label>
+                    <textarea id="found-description" name="found_description" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="found-image">Upload image of the item (optional)</label>
+                    <input type="file" id="found-image" name="found_image" accept="image/*">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn secondary-btn" id="cancel-found">Cancel</button>
+                    <button type="submit" class="btn primary-btn">Submit Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Claim Item Modal -->
+<div class="modal" id="claim-modal">
+    <div class="modal-content animate-modal">
+        <div class="modal-header">
+            <h2>Claim This Item</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="claim-form" action="{% url 'submit_ownership_claim' item.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="claim-name">Your Name</label>
+                    <input type="text" id="claim-name" name="claim_name" required {% if user.is_authenticated %}value="{{ user.get_full_name }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="claim-email">Your Email</label>
+                    <input type="email" id="claim-email" name="claim_email" required {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="claim-phone">Your Phone</label>
+                    <input type="text" id="claim-phone" name="claim_phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="claim-proof">Proof of ownership</label>
+                    <textarea id="claim-proof" name="claim_proof" rows="5" required>Please describe unique identifying features or details about this item that would prove it's yours.</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="claim-image">Upload proof image (optional)</label>
+                    <input type="file" id="claim-image" name="claim_image" accept="image/*">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn secondary-btn" id="cancel-claim">Cancel</button>
+                    <button type="submit" class="btn primary-btn">Submit Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image gallery functionality
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const mainImage = document.getElementById('main-image');
+        
+        if (thumbnails.length > 0 && mainImage) {
+            thumbnails.forEach(thumbnail => {
+                thumbnail.addEventListener('click', function() {
+                    // Remove active class from all thumbnails
+                    thumbnails.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked thumbnail
+                    this.classList.add('active');
+                    
+                    // Update main image
+                    mainImage.src = this.getAttribute('data-src');
+                });
+            });
+        }
+        
+        // Contact modal
+        const contactBtn = document.getElementById('contact-btn');
+        const contactModal = document.getElementById('contact-modal');
+        const cancelContact = document.getElementById('cancel-contact');
+        const closeContactModal = contactModal.querySelector('.close-modal');
+        
+        contactBtn.addEventListener('click', function() {
+            contactModal.style.display = 'block';
+        });
+        
+        cancelContact.addEventListener('click', function() {
+            contactModal.style.display = 'none';
+        });
+        
+        closeContactModal.addEventListener('click', function() {
+            contactModal.style.display = 'none';
+        });
+        
+        // Found Item modal
+        const foundBtn = document.getElementById('found-btn');
+        const foundModal = document.getElementById('found-modal');
+        
+        if (foundBtn) {
+            const cancelFound = document.getElementById('cancel-found');
+            const closeFoundModal = foundModal.querySelector('.close-modal');
+            
+            foundBtn.addEventListener('click', function() {
+                foundModal.style.display = 'block';
+            });
+            
+            cancelFound.addEventListener('click', function() {
+                foundModal.style.display = 'none';
+            });
+            
+            closeFoundModal.addEventListener('click', function() {
+                foundModal.style.display = 'none';
+            });
+        }
+        
+        // Claim Item modal
+        const claimBtn = document.getElementById('claim-btn');
+        const claimModal = document.getElementById('claim-modal');
+        
+        if (claimBtn) {
+            const cancelClaim = document.getElementById('cancel-claim');
+            const closeClaimModal = claimModal.querySelector('.close-modal');
+            
+            claimBtn.addEventListener('click', function() {
+                claimModal.style.display = 'block';
+            });
+            
+            cancelClaim.addEventListener('click', function() {
+                claimModal.style.display = 'none';
+            });
+            
+            closeClaimModal.addEventListener('click', function() {
+                claimModal.style.display = 'none';
+            });
+        }
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === contactModal) {
+                contactModal.style.display = 'none';
+            }
+            if (e.target === foundModal) {
+                foundModal.style.display = 'none';
+            }
+            if (e.target === claimModal) {
+                claimModal.style.display = 'none';
+            }
+        });
+        
+        // Contact form submission
+        const contactForm = document.getElementById('contact-form');
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Your message has been sent to the item owner!');
+            contactModal.style.display = 'none';
+        });
+        
+        // Found form submission
+        const foundForm = document.getElementById('found-form');
+        
+        if (foundForm) {
+            foundForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Your claim has been submitted! The owner will review it and contact you.');
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('An error occurred. Please try again.');
+                    console.error('Error:', error);
+                });
+                foundModal.style.display = 'none';
+            });
+        }
+        
+        // Claim form submission
+        const claimForm = document.getElementById('claim-form');
+        
+        if (claimForm) {
+            claimForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Your ownership claim has been submitted! The finder will review it and contact you.');
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('An error occurred. Please try again.');
+                    console.error('Error:', error);
+                });
+                claimModal.style.display = 'none';
+            });
+        }
+    });
+</script>
+{% endblock %}

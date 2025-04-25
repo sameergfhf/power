@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Claim Detail | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/claims.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container claim-detail-container">
+    <div class="breadcrumb">
+        <a href="{% url 'main' %}">Home</a> &gt;
+        <a href="{% url 'manage_claims' %}">Manage Claims</a> &gt;
+        <span>Claim Detail</span>
+    </div>
+    
+    <div class="claim-detail-card">
+        <div class="claim-header">
+            <h1>Claim Details</h1>
+            <div class="claim-badge status-{{ claim.status }}">{{ claim.get_status_display }}</div>
+        </div>
+        
+        <div class="claim-content">
+            <div class="item-summary">
+                <h2>Item Information</h2>
+                <div class="info-row">
+                    <span class="info-label">Item:</span>
+                    <span class="info-value">{{ claim.item.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value">{{ claim.item.get_item_type_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value">{{ claim.item.get_category_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value">{{ claim.item.location }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">{{ claim.item.date_lost_found }}</span>
+                </div>
+                
+                <div class="item-actions">
+                    <a href="{% url 'item_new' item.claim.id %}" class="btn secondary-btn">
+                        <i class="fas fa-eye"></i> View Item
+                    </a>
+                </div>
+            </div>
+            
+            <div class="claim-info">
+                <h2>Claim Information</h2>
+                <div class="claimer-info">
+                    <h3>Claimer Details</h3>
+                    <div class="info-row">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">{{ claim.claimer_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ claim.claimer_email }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">{{ claim.claimer_phone }}</span>
+                    </div>
+                </div>
+                
+                <div class="claim-details">
+                    <h3>Claim Details</h3>
+                    <div class="info-row">
+                        <span class="info-label">Claim Type:</span>
+                        <span class="info-value">{{ claim.get_claim_type_display }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted:</span>
+                        <span class="info-value">{{ claim.created_at }}</span>
+                    </div>
+                    
+                    {% if claim.claim_type == 'found' %}
+                        <div class="info-row">
+                            <span class="info-label">Found Location:</span>
+                            <span class="info-value">{{ claim.found_location }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Found Date:</span>
+                            <span class="info-value">{{ claim.found_date }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Details:</span>
+                            <div class="info-value">{{ claim.found_description }}</div>
+                        </div>
+                    {% else %}
+                        <div class="info-row">
+                            <span class="info-label">Ownership Proof:</span>
+                            <div class="info-value">{{ claim.ownership_proof }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if claim.image %}
+                        <div class="info-row">
+                            <span class="info-label">Image:</span>
+                            <div class="info-value">
+                                <img src="{{ claim.image.url }}" alt="Claim image" class="claim-image">
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if claim.status != 'pending' %}
+                    <div class="review-info">
+                        <h3>Review Information</h3>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value status-text-{{ claim.status }}">{{ claim.get_status_display }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Reviewed On:</span>
+                            <span class="info-value">{{ claim.reviewed_at }}</span>
+                        </div>
+                        {% if claim.reviewer_notes %}
+                            <div class="info-row">
+                                <span class="info-label">Notes:</span>
+                                <div class="info-value">{{ claim.reviewer_notes }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if claim.status == 'pending' %}
+                <div class="review-form">
+                    <h2>Review This Claim</h2>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="notes">Notes to the claimer (optional):</label>
+                            <textarea id="notes" name="notes" rows="4" placeholder="Add any notes or instructions for the claimer..."></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" name="action" value="reject" class="btn reject-btn">
+                                <i class="fas fa-times"></i> Reject Claim
+                            </button>
+                            <button type="submit" name="action" value="approve" class="btn approve-btn">
+                                <i class="fas fa-check"></i> Approve Claim
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+            
+            <div class="back-action">
+                <a href="{% url 'manage_claims' %}" class="btn secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Claims
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

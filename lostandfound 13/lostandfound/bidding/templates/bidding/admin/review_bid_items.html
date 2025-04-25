@@ -1,0 +1,142 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}Review Bid Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item active">Review Item</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Review Item: {{ item.title }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h4>Item Details</h4>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Title:</strong> {{ item.title }}</p>
+                            <p><strong>Seller:</strong> {{ item.user.username }}</p>
+                            <p><strong>Initial Price:</strong> ${{ item.initial_price }}</p>
+                            <p><strong>Min Increment:</strong> ${{ item.min_increment }}</p>
+                            <p><strong>Submitted:</strong> {{ item.created_at|date:"F j, Y, g:i a" }}</p>
+                            
+                            <div class="mb-3">
+                                <h5>Description:</h5>
+                                <div class="p-3 bg-light rounded">
+                                    {{ item.description|linebreaks }}
+                                </div>
+                            </div>
+                            
+                            {% if item.related_item %}
+                                <p><strong>Related Found Item:</strong> <a href="{% url 'item_detail' item.related_item.id %}">{{ item.related_item.title }}</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h4>Item Image</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" class="img-fluid rounded" alt="{{ item.title }}">
+                            {% else %}
+                                <div class="alert alert-info">No main image provided</div>
+                            {% endif %}
+                            
+                            {% if item.images.all %}
+                                <div class="row mt-3">
+                                    <h5>Additional Images:</h5>
+                                    {% for img in item.images.all %}
+                                        <div class="col-md-4 mb-2">
+                                            <img src="{{ img.image.url }}" class="img-thumbnail" alt="Additional image">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h4>Review Decision</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">Status Decision:</label>
+                                    {{ form.status }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date:</label>
+                                    {{ form.start_date }}
+                                    <div class="form-text">If approved, when should bidding start? Leave blank for immediate start.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date:</label>
+                                    {{ form.end_date }}
+                                    <div class="form-text">When should the auction end?</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.admin_notes.id_for_label }}" class="form-label">Admin Notes:</label>
+                                    {{ form.admin_notes }}
+                                    <div class="form-text">If rejecting, please provide a reason. These notes will be visible to the seller.</div>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Submit Decision</button>
+                                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Show/hide fields based on selected status
+        $('#id_status').change(function() {
+            var status = $(this).val();
+            
+            // If approving, show date fields
+            if (status === 'active') {
+                $('#id_start_date').closest('.mb-3').show();
+                $('#id_end_date').closest('.mb-3').show();
+            } else {
+                $('#id_start_date').closest('.mb-3').hide();
+            }
+            
+            // If rejecting, focus on notes
+            if (status === 'rejected') {
+                $('#id_admin_notes').focus();
+            }
+        });
+        
+        // Trigger on load
+        $('#id_status').change();
+    });
+</script>
+{% endblock %}

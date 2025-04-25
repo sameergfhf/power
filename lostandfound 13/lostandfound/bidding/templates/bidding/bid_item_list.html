@@ -1,0 +1,146 @@
+{% extends 'work.html' %}
+
+{% block title %}Browse Auctions - Bid & Found{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="text-accent animate__animated animate__fadeInDown">Browse Auctions</h1>
+            <p class="text-secondary animate__animated animate__fadeIn">Find and bid on unique items from our community.</p>
+        </div>
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4 animate__animated animate__fadeIn">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-navy-blue-light border-0">
+                            <i class="fas fa-search text-accent"></i>
+                        </span>
+                        <input type="text" class="form-control bg-navy-blue-light border-0" name="search" value="{{ search_query }}" placeholder="Search auctions...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="sort_by" class="form-select bg-navy-blue-light border-0" onchange="this.form.submit()">
+                        <option value="end_date" {% if sort_by == 'end_date' %}selected{% endif %}>Ending Soon</option>
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+                        <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>Most Bids</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="row">
+        {% if bid_items %}
+            {% for item in bid_items %}
+                <div class="col-md-4 col-sm-6 mb-4 animate-on-scroll">
+                    <div class="card h-100">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-navy-blue-light text-center py-5">
+                                <i class="fas fa-image fa-3x text-secondary"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.title }}</h5>
+                            <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">${{ item.current_price }}</span>
+                                <span class="badge bg-navy-blue-light">
+                                    <i class="fas fa-gavel"></i> {{ item.bid_count }} bids
+                                </span>
+                            </div>
+                            <p class="small mb-0">
+                                <i class="far fa-clock"></i> 
+                                <span class="time-remaining" data-item-id="{{ item.id }}">{{ item.time_remaining }}</span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            {% if user.is_authenticated %}
+                                <div class="quick-bid-form mb-2">
+                                    <form method="post" action="{% url 'place_bid' item.id %}" class="d-flex">
+                                        {% csrf_token %}
+                                        <input type="number" name="amount" class="form-control form-control-sm me-2" 
+                                            value="{{ item.current_price|add:item.min_increment }}" 
+                                            min="{{ item.current_price|add:item.min_increment }}" 
+                                            step="0.01">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-gavel"></i> Bid
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                            <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center my-5">
+                <div class="animate__animated animate__fadeIn">
+                    <i class="fas fa-search fa-4x text-secondary mb-3"></i>
+                    <h3 class="text-accent">No auctions found</h3>
+                    <p>Try adjusting your search criteria or check back later.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+        {% include 'bidding/includes/pagination.html' %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        function updateTimeRemaining() {
+            $('.time-remaining').each(function() {
+                const itemId = $(this).data('item-id');
+                const timeElement = $(this);
+                
+                $.ajax({
+                    url: `/bidding/items/${itemId}/time-remaining/`,
+                    type: 'GET',
+                    success: function(data) {
+                        timeElement.text(data.time_remaining);
+                        if (data.has_ended) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        }
+        
+        setInterval(updateTimeRemaining, 10000);
+        
+        $(window).scroll(function() {
+            $('.animate-on-scroll').each(function() {
+                const elementTop = $(this).offset().top;
+                const elementHeight = $(this).outerHeight();
+                const windowHeight = $(window).height();
+                const scrollY = $(window).scrollTop();
+                
+                if (scrollY > elementTop - windowHeight + elementHeight/2) {
+                    $(this).addClass('fade-in');
+                }
+            });
+        }).scroll();
+    });
+</script>
+{% endblock %}

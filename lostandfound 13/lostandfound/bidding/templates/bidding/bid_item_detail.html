@@ -1,0 +1,286 @@
+{% extends 'work.html' %}
+
+{% block title %}{{ bid_item.title }} - Bid & Found{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4 animate__animated animate__fadeIn">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'bidding_home' %}" class="text-accent">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bid_item_list' %}" class="text-accent">Auctions</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ bid_item.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Item Images -->
+            <div class="card mb-4 animate__animated animate__fadeIn">
+                <div class="card-body p-0">
+                    {% if bid_item.image %}
+                        <img src="{{ bid_item.image.url }}" class="img-fluid w-100" alt="{{ bid_item.title }}" style="max-height: 500px; object-fit: contain;">
+                    {% else %}
+                        <div class="bg-navy-blue-light text-center py-5">
+                            <i class="fas fa-image fa-5x text-secondary"></i>
+                            <p class="mt-3">No image available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if bid_item.images.exists %}
+                <div class="row mb-4 animate__animated animate__fadeIn">
+                    {% for img in bid_item.images.all %}
+                        <div class="col-3 mb-3">
+                            <img src="{{ img.image.url }}" class="img-thumbnail bg-navy-blue-light border-0" alt="Additional image" style="width: 100%; height: 80px; object-fit: cover; cursor: pointer;" onclick="document.querySelector('.card-body img').src = this.src">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Item Details -->
+            <div class="card mb-4 animate__animated animate__fadeIn">
+                <div class="card-header bg-navy-blue-light">
+                    <h2 class="text-accent mb-0">{{ bid_item.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-accent">
+                                <i class="fas fa-tag"></i> Current Price: <span class="h4 ms-2" id="current-price">${{ bid_item.current_price }}</span>
+                            </p>
+                            <p>
+                                <i class="fas fa-gavel"></i> Bids: <span id="bid-count">{{ bid_item.bid_count }}</span>
+                            </p>
+                            <p>
+                                <i class="far fa-clock"></i> Time Remaining: <span class="time-remaining" id="time-remaining" data-item-id="{{ bid_item.id }}">{{ bid_item.time_remaining }}</span>
+                            </p>
+                            <p>
+                                <i class="fas fa-user"></i> Seller: {{ bid_item.user.username }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <i class="fas fa-calendar-alt"></i> Start Date: {{ bid_item.start_date|date:"M d, Y H:i" }}
+                            </p>
+                            <p>
+                                <i class="fas fa-calendar-check"></i> End Date: {{ bid_item.end_date|date:"M d, Y H:i" }}
+                            </p>
+                            <p>
+                                <i class="fas fa-money-bill-wave"></i> Minimum Increment: ${{ bid_item.min_increment }}
+                            </p>
+                            <p>
+                                <i class="fas fa-chart-line"></i> Status: 
+                                <span class="bid-status-{{ bid_item.status }}">
+                                    {{ bid_item.status|title }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="text-accent">Description</h5>
+                    <div class="description mb-4">
+                        {{ bid_item.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Bid Box -->
+            {% if bid_item.status == 'active' and not bid_item.has_ended %}
+                <div class="card mb-4 animate__animated animate__fadeInRight">
+                    <div class="card-header bg-accent text-navy-primary">
+                        <h4 class="mb-0"><i class="fas fa-gavel"></i> Place Your Bid</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if user.is_authenticated %}
+                            {% if user == bid_item.user %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> You cannot bid on your own item.
+                                </div>
+                            {% else %}
+                                <form id="bid-form" method="post" action="{% url 'place_bid' bid_item.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="id_amount" class="form-label">Your Bid Amount ($)</label>
+                                        {{ bid_form.amount }}
+                                        <div class="form-text text-light">{{ bid_form.amount.help_text }}</div>
+                                        <div id="bid-errors" class="invalid-feedback"></div>
+                                    </div>
+                                    <button style="color:  #64ffda;" type="submit" class="btn btn-accent w-100" id="place-bid-btn">
+                                        <i  class="fas fa-gavel"></i> Place Bid
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-3">
+                                <p>You need to be logged in to place a bid.</p>
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> Login to Bid
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card mb-4 animate__animated animate__fadeInRight">
+                    <div class="card-header bg-navy-blue-light">
+                        <h4 class="mb-0"><i class="fas fa-info-circle"></i> Auction Status</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if bid_item.status == 'sold' %}
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h5>This item has been sold</h5>
+                            <p>The auction ended on {{ bid_item.end_date|date:"M d, Y H:i" }}</p>
+                        {% elif bid_item.status == 'expired' %}
+                            <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                            <h5>This auction has expired</h5>
+                            <p>No bids were placed before the deadline.</p>
+                        {% elif bid_item.has_ended %}
+                            <i class="fas fa-hourglass-end fa-4x text-warning mb-3"></i>
+                            <h5>This auction has ended</h5>
+                            <p>The bidding period is over.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Highest Bidder -->
+            {% if bid_item.highest_bidder %}
+                <div class="card mb-4 animate__animated animate__fadeInRight">
+                    <div class="card-header bg-navy-blue-light">
+                        <h5 class="mb-0"><i class="fas fa-trophy"></i> Current Highest Bidder</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-user-circle fa-3x text-accent"></i>
+                        </div>
+                        <h5>{{ bid_item.highest_bidder.username }}</h5>
+                        <p class="text-accent">${{ bid_item.current_price }}</p>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Bid History -->
+            <div class="card mb-4 animate__animated animate__fadeInRight">
+                <div class="card-header bg-navy-blue-light">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Bid History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush" id="bid-history">
+                        {% if bid_history %}
+                            {% for bid in bid_history %}
+                                <li class="list-group-item bg-navy-blue-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ bid.user.username }}</strong>
+                                            <br>
+                                            <small class="text-secondary">{{ bid.created_at|date:"M d, Y H:i" }}</small>
+                                        </div>
+                                        <span class="badge bg-navy-secondary px-3 py-2">${{ bid.amount }}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item bg-navy-blue-light text-center py-4">
+                                <i class="fas fa-gavel text-secondary"></i>
+                                <p class="mb-0 mt-2">No bids yet</p>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        const itemId = $('#time-remaining').data('item-id');
+        const minIncrement = parseFloat("{{ bid_item.min_increment|escapejs }}");
+
+        function updateTimeRemaining() {
+            $.ajax({
+                url: `/bidding/items/${itemId}/time-remaining/`,
+                type: 'GET',
+                success: function (data) {
+                    $('#time-remaining').text(data.time_remaining);
+                    if (data.has_ended) {
+                        setTimeout(function () {
+                            location.reload();
+                        }, 3000);
+                    }
+                }
+            });
+        }
+
+        function updateCurrentPrice() {
+            $.ajax({
+                url: `/bidding/items/${itemId}/current-price/`,
+                type: 'GET',
+                success: function (data) {
+                    const currentPrice = parseFloat(data.current_price);
+                    const minBid = currentPrice + minIncrement;
+
+                    $('#current-price').text('$' + currentPrice.toFixed(2));
+                    $('#bid-count').text(data.bid_count);
+                    $('#id_amount').attr({
+                        'min': minBid,
+                        'value': minBid,
+                        'placeholder': 'Min: $' + minBid.toFixed(2)
+                    });
+                    $('.form-text').text('Minimum bid: $' + minBid.toFixed(2));
+                }
+            });
+        }
+
+        setInterval(updateTimeRemaining, 1000);
+        setInterval(updateCurrentPrice, 5000);
+
+        $('#bid-form').submit(function (e) {
+            e.preventDefault();
+            $('#place-bid-btn').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function (data) {
+                    if (data.success) {
+                        $('<div class="alert alert-success animate__animated animate__fadeIn">' + data.message + '</div>')
+                            .insertBefore('#bid-form')
+                            .delay(4000)
+                            .fadeOut();
+
+                        $('#current-price').text('$' + parseFloat(data.current_price).toFixed(2));
+                        updateCurrentPrice();
+                        $('#bid-form')[0].reset();
+                        $('#id_amount').removeClass('is-invalid');
+                        $('#bid-errors').empty();
+                    } else {
+                        $('#bid-errors').html(data.errors.amount);
+                        $('#id_amount').addClass('is-invalid');
+                    }
+                },
+                error: function () {
+                    $('#bid-errors').html('An error occurred. Please try again.');
+                },
+                complete: function () {
+                    $('#place-bid-btn').html('<i class="fas fa-gavel"></i> Place Bid').prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

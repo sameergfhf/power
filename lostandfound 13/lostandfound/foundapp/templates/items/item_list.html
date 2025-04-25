@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lost & Found Items | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cards.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<header class="header">
+    <div class="header-content">
+        <h1 class="animate-on-scroll fade-in">Lost & Found Items</h1>
+        <p class="animate-on-scroll fade-in">Browse through reported items or add your own lost or found item.</p>
+        <form method="GET" action="{% url 'item_list' %}" class="search-container animate-on-scroll fade-in">
+            <input type="text" id="search-input" name="search" placeholder="Search items..." value="{{ search_query }}">
+            <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+        </form>
+        <div class="filter-container animate-on-scroll fade-in">
+            <a href="{% url 'item_list' %}" class="filter-btn {% if item_type == 'all' %}active{% endif %}" data-filter="all">All Items</a>
+            <a href="{% url 'item_list' %}?type=lost" class="filter-btn {% if item_type == 'lost' %}active{% endif %}" data-filter="lost">Lost Items</a>
+            <a href="{% url 'item_list' %}?type=found" class="filter-btn {% if item_type == 'found' %}active{% endif %}" data-filter="found">Found Items</a>
+        </div>
+    </div>
+</header>
+
+<!-- Cards Section -->
+<section class="cards-section">
+    <div class="container">
+        <div class="cards-grid" id="cards-container">
+            {% for item in items %}
+                <div class="card animate-on-scroll fade-in" data-id="{{ item.id }}">
+                    <div class="card-image" {% if item.images.first %}style="background-image: url('{{ item.images.first.image.url }}');"{% endif %}>
+                        {% if not item.images.first %}<i class="fas fa-image"></i>{% endif %}
+                        <div class="card-badge {% if item.item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                            {{ item.get_item_type_display }}
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ item.name }}</h3>
+                        <div class="card-info">
+                            <p><i class="fas fa-map-marker-alt"></i> {{ item.location }}</p>
+                            <p><i class="fas fa-calendar-alt"></i> {{ item.date_lost_found }}</p>
+                        </div>
+                        <p class="card-description">{{ item.description|truncatechars:100 }}</p>
+                        <div class="card-actions">
+                            <a href="{% url 'item_new' item.id %}" class="card-btn details-btn">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>No Items Found</h3>
+                    <p>There are no items matching your search criteria. Try adjusting your filters or add a new item.</p>
+                    <a href="{% url 'add_item' %}" class="btn primary-btn">
+                        <i class="fas fa-plus"></i> Add Item
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if item_type != 'all' %}type={{ item_type }}&{% endif %}page=1" class="pagination-link">&laquo; First</a>
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if item_type != 'all' %}type={{ item_type }}&{% endif %}page={{ page_obj.previous_page_number }}" class="pagination-link">Previous</a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <a class="pagination-link active">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if item_type != 'all' %}type={{ item_type }}&{% endif %}page={{ num }}" class="pagination-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if item_type != 'all' %}type={{ item_type }}&{% endif %}page={{ page_obj.next_page_number }}" class="pagination-link">Next</a>
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if item_type != 'all' %}type={{ item_type }}&{% endif %}page={{ page_obj.paginator.num_pages }}" class="pagination-link">Last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Add Item Button -->
+        <a href="{% url 'add_item' %}" class="add-item-btn" id="add-item-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+    </div>
+</section>
+{% endblock %}

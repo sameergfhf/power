@@ -1,0 +1,600 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* ... (Your existing CSS styles) ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #d0e6ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: #e0f0ff;
+            width: 90%;
+            max-width: 1200px;
+            height: 600px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 56, 168, 0.2);
+            display: flex;
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            color: white;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            animation: slideInLeft 1s ease-out;
+        }
+
+        .hero-image {
+            height: 60%;
+            width: 100%;
+            background-image: url("{% static 'img/img.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: zoomIn 1.5s ease-out;
+        }
+
+        .tagline {
+            font-size: 32px;
+            font-weight: 600;
+            margin-top: 20px;
+            line-height: 1.2;
+            animation: slideInBottom 1.5s ease-out;
+        }
+
+        .dots {
+            display: flex;
+            margin-top: 40px;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            margin-right: 10px;
+        }
+
+        .dot.active {
+            background-color: white;
+            width: 25px;
+            border-radius: 5px;
+        }
+
+        .right-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(to bottom, #3a6ea5, #2c5282);
+            color: white;
+        }
+
+        h1 {
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            animation: slideInRight 1s ease-out;
+        }
+
+        .signup-link {
+            display: flex;
+            margin-bottom: 30px;
+            color: #c9dcf5;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .signup-link a {
+            color: #82b5ff;
+            text-decoration: none;
+            margin-left: 5px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #b8d4ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            animation: slideInBottom 1s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        .form-group:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #5484c7;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: rgba(208, 230, 255, 0.15);
+            color: white;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder {
+            color: #c9dcf5;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #82b5ff;
+            box-shadow: 0 0 0 3px rgba(130, 181, 255, 0.3);
+            background-color: rgba(208, 230, 255, 0.25);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #c9dcf5;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #82b5ff;
+        }
+
+        /* Role selection styles */
+        .role-selection {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            animation: slideInBottom 1s ease-out;
+            animation-delay: 0.4s;
+            animation-fill-mode: both;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #5484c7;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #c9dcf5;
+            background-color: rgba(208, 230, 255, 0.15);
+        }
+
+        .role-option.active {
+            background-color: rgba(130, 181, 255, 0.4);
+            border-color: #82b5ff;
+            color: white;
+            box-shadow: 0 0 0 2px rgba(130, 181, 255, 0.3);
+        }
+
+        .role-option:hover {
+            background-color: rgba(130, 181, 255, 0.25);
+        }
+
+        .role-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1.5s ease-out;
+            color: #c9dcf5;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #5484c7;
+            border-radius: 4px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox.checked {
+            background-color: #82b5ff;
+            border-color: #82b5ff;
+        }
+
+        .custom-checkbox.checked::after {
+            content: "✓";
+            color: #1e3c72;
+            font-size: 14px;
+        }
+
+        .forgot-password {
+            color: #82b5ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #b8d4ff;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #82b5ff, #5484c7);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulseButton 2s infinite;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #5484c7, #82b5ff);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(30, 60, 114, 0.5);
+        }
+
+        /* Alert messages */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 350px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            animation: slideInRight 0.5s ease-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInBottom {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulseButton {
+            0% {
+                box-shadow: 0 0 0 0 rgba(130, 181, 255, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(130, 181, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(130, 181, 255, 0);
+            }
+        }
+
+        /* For mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .left-panel {
+                display: none;
+            }
+
+            .right-panel {
+                padding: 30px 20px;
+            }
+
+            .role-selection {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">
+            {{ message }}
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="logo">FoundIt</div>
+            <div class="hero-image"></div>
+            <div class="tagline">Welcome Back,<br>Let's Find Together</div>
+            <div class="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <h1>Log in</h1>
+            <div class="signup-link">
+                Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
+            </div>
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="error">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="password-wrapper">
+                        {{ form.password }}
+                        <span class="password-toggle">👁️</span>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="error">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="role-selection">
+                        <div class="role-option" data-role="user">
+                            <div class="role-icon">👤</div>
+                            <div>User</div>
+                        </div>
+                        <div class="role-option" data-role="admin">
+                            <div class="role-icon">⚙️</div>
+                            <div>Admin</div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="role" id="selected_role" value="user">
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="remember-me">
+                        <div class="custom-checkbox" id="remember-checkbox"></div>
+                        <input type="checkbox" name="remember_me" id="id_remember_me" style="display: none;">
+                        Remember me
+                    </div>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="login-btn">Log in</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Toggle password visibility
+            const passwordToggle = document.querySelector('.password-toggle');
+            const passwordInput = document.querySelector('input[type="password"]');
+
+            passwordToggle.addEventListener('click', () => {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                } else {
+                    passwordInput.type = 'password';
+                }
+            });
+
+            // Custom checkbox for remember me
+            const checkbox = document.getElementById('remember-checkbox');
+            const realCheckbox = document.getElementById('id_remember_me');
+
+            checkbox.addEventListener('click', () => {
+                checkbox.classList.toggle('checked');
+                realCheckbox.checked = checkbox.classList.contains('checked');
+            });
+
+            // Role selection
+            const roleOptions = document.querySelectorAll('.role-option');
+            const selectedRoleInput = document.getElementById('selected_role');
+
+            // Set default active role
+            document.querySelector('.role-option[data-role="user"]').classList.add('active');
+
+            roleOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove active class from all options
+                    roleOptions.forEach(opt => opt.classList.remove('active'));
+
+                    // Add active class to clicked option
+                    option.classList.add('active');
+
+                    // Update hidden input value
+                    selectedRoleInput.value = option.getAttribute('data-role');
+                    console.log("Selected role input value:", selectedRoleInput.value); // Debugging line
+                });
+            });
+
+            // Add subtle animations for input focus
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.style.transform = 'translateY(-5px)';
+                    input.style.backgroundColor = 'rgba(208, 230, 255, 0.25)';
+                });
+
+                input.addEventListener('blur', () => {
+                    input.parentElement.style.transform = 'translateY(0)';
+                    if (!input.value) {
+                        input.style.backgroundColor = 'rgba(208, 230, 255, 0.15)';
+                    }
+                });
+            });
+
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(() => alert.remove(), 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

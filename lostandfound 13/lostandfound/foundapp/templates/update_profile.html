@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Profile | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-update-container">
+    <div class="container">
+        <div class="form-card animate-on-scroll fade-in">
+            <div class="form-header">
+                <h1>Update Your Profile</h1>
+                <p>Customize your profile information and settings</p>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-content">
+                    <div class="form-section">
+                        <h2>Account Information</h2>
+                        
+                        <div class="form-group">
+                            <label for="{{ u_form.username.id_for_label }}">Username</label>
+                            {{ u_form.username }}
+                            {% if u_form.username.errors %}
+                                <div class="error">{{ u_form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ u_form.email.id_for_label }}">Email</label>
+                            {{ u_form.email }}
+                            {% if u_form.email.errors %}
+                                <div class="error">{{ u_form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ u_form.first_name.id_for_label }}">First Name</label>
+                                {{ u_form.first_name }}
+                                {% if u_form.first_name.errors %}
+                                    <div class="error">{{ u_form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ u_form.last_name.id_for_label }}">Last Name</label>
+                                {{ u_form.last_name }}
+                                {% if u_form.last_name.errors %}
+                                    <div class="error">{{ u_form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>Profile Details</h2>
+                        
+                        <div class="form-group">
+                            <label for="{{ p_form.phone.id_for_label }}">Phone Number</label>
+                            {{ p_form.phone }}
+                            {% if p_form.phone.errors %}
+                                <div class="error">{{ p_form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ p_form.bio.id_for_label }}">Bio</label>
+                            {{ p_form.bio }}
+                            {% if p_form.bio.errors %}
+                                <div class="error">{{ p_form.bio.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Profile Image</label>
+                            <div class="profile-image-upload">
+                                <div class="current-image">
+                                    <img src="{{ user.profile.profile_image.url }}" alt="Current profile image" id="profile-preview">
+                                </div>
+                                <div class="upload-controls">
+                                    <label for="{{ p_form.profile_image.id_for_label }}" class="upload-btn">
+                                        <i class="fas fa-upload"></i> Choose New Image
+                                    </label>
+                                    {{ p_form.profile_image }}
+                                    {% if p_form.profile_image.errors %}
+                                        <div class="error">{{ p_form.profile_image.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn primary-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'profile_page' %}" class="btn secondary-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Profile image preview
+        const imageInput = document.getElementById('{{ p_form.profile_image.id_for_label }}');
+        const imagePreview = document.getElementById('profile-preview');
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    
+                    // Add animation
+                    imagePreview.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        imagePreview.style.transform = 'scale(1)';
+                    }, 200);
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Form animations
+        const formSections = document.querySelectorAll('.form-section');
+        formSections.forEach((section, index) => {
+            setTimeout(() => {
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
+            }, 200 * index);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% comment %}
+    File: templates/bidding/components/notification_list.html
+    This component displays a list of notifications for the user
+{% endcomment %}
+
+<div class="card bg-navy-blue shadow">
+    <div class="card-header bg-navy-blue-dark d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Your Notifications</h5>
+        {% if notifications %}
+            <a href="?mark_read=true" class="btn btn-sm btn-outline-light">Mark All as Read</a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush notification-list">
+            {% for notification in notifications %}
+                <li class="list-group-item bg-navy-blue-light text-white {% if not notification.is_read %}unread{% endif %}" 
+                    data-notification-id="{{ notification.id }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if notification.notification_type == 'new_bid' %}
+                                <i class="fas fa-gavel text-info me-2"></i>
+                            {% elif notification.notification_type == 'outbid' %}
+                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            {% elif notification.notification_type == 'won' %}
+                                <i class="fas fa-trophy text-success me-2"></i>
+                            {% elif notification.notification_type == 'ended' %}
+                                <i class="fas fa-flag-checkered text-secondary me-2"></i>
+                            {% elif notification.notification_type == 'approved' %}
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                            {% elif notification.notification_type == 'rejected' %}
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                            {% endif %}
+                            {{ notification.message }}
+                        </div>
+                        <div class="text-muted small">{{ notification.created_at|timesince }} ago</div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'bid_item_detail' notification.bid_item.id %}" class="btn btn-sm btn-outline-light">
+                            View Item
+                        </a>
+                        {% if not notification.is_read %}
+                            <button class="btn btn-sm btn-outline-secondary mark-read-btn" 
+                                    data-notification-id="{{ notification.id }}">
+                                Mark as Read
+                            </button>
+                        {% endif %}
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item bg-navy-blue-light text-white text-center py-4">
+                    You have no notifications.
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Mark notification as read
+        $('.mark-read-btn').click(function() {
+            const notificationId = $(this).data('notification-id');
+            const button = $(this);
+            const listItem = button.closest('li');
+            
+            $.ajax({
+                url: `/bidding/notifications/${notificationId}/read/`,
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        button.remove();
+                        listItem.removeClass('unread');
+                        
+                        // Update unread count in navbar
+                        updateUnreadNotificationsCount();
+                    }
+                }
+            });
+        });
+    });
+</script>

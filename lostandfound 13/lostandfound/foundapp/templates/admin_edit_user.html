@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit User | Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --navy-darkest: #0d1b2a;
+        --navy-dark: #1b263b;
+        --navy-primary: #2c3e50;
+        --navy-light: #415a77;
+        --navy-accent: #3a86ff;
+        --navy-highlight: #4aa3df;
+        --text-light: #e0e1dd;
+        --text-muted: #bdc3c7;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+    }
+    
+    #admin-content {
+        background-color: var(--navy-darkest);
+        color: var(--text-light);
+        padding: 20px 0;
+        min-height: 80vh;
+    }
+    
+    .admin-header {
+        background-color: var(--navy-dark);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .admin-card {
+        background-color: var(--navy-light);
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .admin-nav-link {
+        color: var(--text-light);
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .admin-nav-link:hover {
+        background-color: var(--navy-accent);
+        color: white;
+    }
+    
+    .user-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--navy-accent);
+        margin-bottom: 20px;
+    }
+    
+    .edit-form-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .form-label {
+        color: var(--text-light);
+        font-weight: 500;
+    }
+    
+    .form-control {
+        background-color: var(--navy-dark);
+        border: 1px solid var(--navy-light);
+        color: var(--text-light);
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+    
+    .form-control:focus {
+        background-color: var(--navy-dark);
+        color: var(--text-light);
+        border-color: var(--navy-accent);
+        box-shadow: 0 0 0 0.25rem rgba(58, 134, 255, 0.25);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+    
+    .form-select {
+        background-color: var(--navy-dark);
+        border: 1px solid var(--navy-light);
+        color: var(--text-light);
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+    
+    .form-select:focus {
+        background-color: var(--navy-dark);
+        color: var(--text-light);
+        border-color: var(--navy-accent);
+        box-shadow: 0 0 0 0.25rem rgba(58, 134, 255, 0.25);
+    }
+    
+    .btn-primary {
+        background-color: var(--navy-accent);
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--navy-highlight);
+    }
+    
+    .btn-secondary {
+        background-color: var(--navy-primary);
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+    
+    .btn-secondary:hover {
+        background-color: var(--navy-light);
+    }
+    
+    .form-section {
+        background-color: var(--navy-primary);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-section-title {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="admin-content">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-12">
+            <!-- Header -->
+            <div class="admin-header d-flex justify-content-between align-items-center">
+                <h2>Edit User</h2>
+                <div class="d-flex">
+                    <a href="{% url 'admin_view_all_users' %}" class="admin-nav-link me-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Users
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Edit Form -->
+            <div class="edit-form-container">
+                <div class="admin-card">
+                    <div class="card-body">
+                        <div class="text-center">
+                            {% if user_to_edit.profile.avatar %}
+                                <img src="{{ user_to_edit.profile.avatar.url }}" alt="User" class="user-avatar">
+                            {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" alt="User" class="user-avatar">
+                            {% endif %}
+                            <h4 class="mb-4">Editing {{ user_to_edit.username }}</h4>
+                        </div>
+                        
+                        <form method="post" action="{% url 'admin_edit_user' user_to_edit.id %}">
+                            {% csrf_token %}
+                            
+                            <!-- Account Information -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">Account Information</h5>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ user_to_edit.username }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ user_to_edit.email }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select class="form-select" id="role" name="role">
+                                        <option value="user" {% if user_to_edit.profile.role == 'user' %}selected{% endif %}>User</option>
+                                        <option value="admin" {% if user_to_edit.profile.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Personal Information -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">Personal Information</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="first_name" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user_to_edit.first_name }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user_to_edit.last_name }}">
+                                    </div>
+                                </div>
+                                
+                                {% if user_to_edit.profile %}
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" value="{{ user_to_edit.profile.phone|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3">{{ user_to_edit.profile.address|default:'' }}</textarea>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Account Status -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">Account Status</h5>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if user_to_edit.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">Active Account</label>
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        Inactive accounts cannot log in to the system.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{% url 'admin_view_all_users' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            
+            if (username === '') {
+                e.preventDefault();
+                alert('Username cannot be empty');
+                return;
+            }
+            
+            if (email === '') {
+                e.preventDefault();
+                alert('Email cannot be empty');
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

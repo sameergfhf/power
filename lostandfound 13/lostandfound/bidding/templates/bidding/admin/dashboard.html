@@ -1,0 +1,257 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}Admin Bidding Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Bidding System Admin Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Active Auctions</h5>
+                    <h2 class="card-text">{{ total_active }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sold Items</h5>
+                    <h2 class="card-text">{{ total_sold }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Approval</h5>
+                    <h2 class="card-text">{{ total_pending }}</h2>
+                    {% if new_pending > 0 %}
+                    <span class="badge bg-danger">{{ new_pending }} new</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bids</h5>
+                    <h2 class="card-text">{{ total_bids }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Quick Actions</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="{% url 'admin_process_ended_auctions' %}" class="btn btn-primary btn-block">
+                        <i class="fas fa-check-circle"></i> Process Ended Auctions
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'admin_all_bid_items' %}" class="btn btn-secondary btn-block">
+                        <i class="fas fa-list"></i> View All Items
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="#" class="btn btn-info btn-block" id="refreshDashboard">
+                        <i class="fas fa-sync-alt"></i> Refresh Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Pending Approval Section -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4>Items Pending Approval ({{ total_pending }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Seller</th>
+                                        <th>Price</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in pending_items %}
+                                    <tr>
+                                        <td>{{ item.title }}</td>
+                                        <td>{{ item.user.username }}</td>
+                                        <td>${{ item.initial_price }}</td>
+                                        <td>{{ item.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'admin_review_bid_item' item.id %}" class="btn btn-sm btn-primary">
+                                                Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if pending_items.count > 5 %}
+                            <a href="{% url 'admin_all_bid_items' %}?status=pending" class="btn btn-sm btn-outline-secondary">
+                                View All Pending Items
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No items pending approval!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Auctions -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Active Auctions</h4>
+                </div>
+                <div class="card-body">
+                    {% if active_auctions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Current Price</th>
+                                        <th>Bids</th>
+                                        <th>Ending</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in active_auctions|slice:":5" %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'bid_item_detail' item.id %}">{{ item.title }}</a>
+                                        </td>
+                                        <td>${{ item.current_price }}</td>
+                                        <td>{{ item.bid_count }}</td>
+                                        <td class="time-remaining" data-item-id="{{ item.id }}">
+                                            {{ item.time_remaining }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if active_auctions.count > 5 %}
+                            <a href="{% url 'admin_all_bid_items' %}?status=active" class="btn btn-sm btn-outline-primary">
+                                View All Active Auctions
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No active auctions at the moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recently Ended Auctions -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h4>Recently Ended Auctions</h4>
+        </div>
+        <div class="card-body">
+            {% if recent_ended %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Seller</th>
+                                <th>Final Price</th>
+                                <th>Status</th>
+                                <th>Ended</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_ended %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'bid_item_detail' item.id %}">{{ item.title }}</a>
+                                </td>
+                                <td>{{ item.user.username }}</td>
+                                <td>${{ item.current_price }}</td>
+                                <td>
+                                    {% if item.status == 'sold' %}
+                                        <span class="badge bg-success">Sold</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Expired</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.updated_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'admin_all_bid_items' %}?status=sold,expired" class="btn btn-sm btn-outline-secondary">
+                    View All Ended Auctions
+                </a>
+            {% else %}
+                <p class="text-muted">No recently ended auctions.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Function to update time remaining for active auctions
+        function updateTimeRemaining() {
+            $('.time-remaining').each(function() {
+                const itemId = $(this).data('item-id');
+                const element = $(this);
+                
+                $.ajax({
+                    url: `/bidding/ajax/time-remaining/${itemId}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.has_ended) {
+                            element.html('<span class="text-danger">Ended</span>');
+                        } else {
+                            element.text(data.time_remaining);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Initial update
+        updateTimeRemaining();
+        
+        // Set interval to update every minute
+        setInterval(updateTimeRemaining, 60000);
+        
+        // Refresh dashboard button
+        $('#refreshDashboard').click(function(e) {
+            e.preventDefault();
+            location.reload();
+        });
+    });
+</script>
+{% endblock %}

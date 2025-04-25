@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block content %}
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="animate-on-scroll fade-in">Reuniting People with Their Valuables</h1>
+            <p class="animate-on-scroll fade-in">Our premium lost and found platform leverages cutting-edge technology to help you recover what matters most.</p>
+            <div class="hero-buttons animate-on-scroll fade-in">
+                <a href="{% url 'add_item' %}" class="btn primary-btn">Report Lost Item</a>
+                <!-- <a href="#" class="btn secondary-btn">How It Works</a> -->
+            </div>
+        </div>
+        <div class="hero-image animate-on-scroll slide-in-right">
+            <img src="/static/img/finding.jpg" alt="Lost and Found Hero Image" class="hero-img">
+            <!-- The placeholder div below can be removed once you have your image -->
+            <!-- <div class="image-placeholder">
+                <i class="fas fa-image"></i>
+                <span>Hero Image</span>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section">
+        <div class="section-header animate-on-scroll fade-in">
+            <h2>About Our Platform</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="about-content">
+            <div class="about-text animate-on-scroll slide-in-left">
+                <h3>The Premier Lost & Found Solution</h3>
+                <p>FoundIt is a sophisticated platform designed to bridge the gap between lost items and their rightful owners. Using advanced matching algorithms and a secure verification process, we've revolutionized the traditional lost and found experience.</p>
+                <p>Our mission is simple: to reduce the stress and inconvenience of losing valuable possessions by creating the most efficient recovery system possible.</p>
+            </div>
+            <div class="about-stats animate-on-scroll slide-in-right">
+                <div class="stat-card">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24h</div>
+                    <div class="stat-label">Average Recovery</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Items Returned</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="section-header animate-on-scroll fade-in">
+            <h2>Premium Features</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card animate-on-scroll fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3>Precise Location</h3>
+                <p>Our system records exact coordinates where items are found, increasing the chances of successful matching.</p>
+            </div>
+            <div class="feature-card animate-on-scroll fade-in" data-delay="200">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure Verification</h3>
+                <p>Owner Verification ensures items are returned only to their rightful owners.</p>
+            </div>
+            <div class="feature-card animate-on-scroll fade-in" data-delay="400">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Notifications</h3>
+                <p>Receive real-time alerts when potential matches to your lost items are found in our system.</p>
+            </div>
+            <div class="feature-card animate-on-scroll fade-in" data-delay="600">
+                <div class="feature-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <h3>Visual Recognition</h3>
+                <p>Image matching helps identify items even with minimal description details.</p>
+            </div>
+            <!-- <div class="feature-card animate-on-scroll fade-in" data-delay="800">
+                <div class="feature-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3>Privacy Protection</h3>
+                <p>Your personal information remains confidential throughout the recovery process.</p>
+            </div>
+            <div class="feature-card animate-on-scroll fade-in" data-delay="1000">
+                <div class="feature-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3>Concierge Service</h3>
+                <p>Members receive dedicated assistance from our recovery specialists.</p>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="section-header animate-on-scroll fade-in">
+            <h2>How It Works</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="steps-container">
+            <div class="step animate-on-scroll slide-in-left">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                    <h3>Report Your Item</h3>
+                    <p>Provide detailed information about your lost item through our intuitive reporting system.</p>
+                </div>
+            </div>
+            <div class="step-connector animate-on-scroll fade-in"></div>
+            <div class="step animate-on-scroll slide-in-right">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                    <h3>Matching</h3>
+                    <p>Algorithms scan for potential matches based on your description.</p>
+                </div>
+            </div>
+            <div class="step-connector animate-on-scroll fade-in"></div>
+            <div class="step animate-on-scroll slide-in-left">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                    <h3>Verification Process</h3>
+                    <p>Once a match is found, we initiate verification protocol to confirm ownership.</p>
+                </div>
+            </div>
+            <div class="step-connector animate-on-scroll fade-in"></div>
+            <div class="step animate-on-scroll slide-in-right">
+                <div class="step-number">04</div>
+                <div class="step-content">
+                    <h3>Secure Return</h3>
+                    <p>After verification, we coordinate the safe return of your item through our trusted network.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="section-header animate-on-scroll fade-in">
+            <h2>Success Stories</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="testimonial-slider">
+            <div class="testimonial-slide animate-on-scroll fade-in">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>I lost my laptop at the airport and was devastated. Within 48 hours of reporting it on FoundIt, I was contacted about a match. The verification process was smooth, and I had my computer back the next day. Incredible service!</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>Michael Thompson</h4>
+                            <p>Business Executive</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide animate-on-scroll fade-in" data-delay="200">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>I never thought I'd see my grandmother's ring again after losing it during a vacation. FoundIt's global network helped locate it at a hotel in another country. Their team handled everything, even international shipping. Worth every penny!</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>Sarah Williams</h4>
+                            <p>Photographer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide animate-on-scroll fade-in" data-delay="400">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>As someone who travels frequently, I've used several lost and found services. None compare to the efficiency and professionalism of FoundIt. Their AI matching technology is genuinely impressive, and their staff goes above and beyond.</p>
+                    <div class="testimonial-author">
+                        <div class="author-image"></div>
+                        <div class="author-info">
+                            <h4>David Chen</h4>
+                            <p>International Consultant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section animate-on-scroll fade-in">
+        <div class="cta-content">
+            <h2>Ready to Recover What Matters?</h2>
+            <p>Join thousands of satisfied users who have successfully recovered their valuable possessions.</p>
+            <div class="cta-buttons">
+                <a href="{% url 'my_items' %}" class="btn primary-btn">Found Lost Item</a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    
+{% endblock %}

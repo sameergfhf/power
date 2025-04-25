@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Items | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cards.css' %}">
+<style>
+    .my-items-header {
+        background: var(--navy-blue);
+        padding: 6rem 0 3rem;
+        text-align: center;
+    }
+    
+    .my-items-header h1 {
+        margin-bottom: 1rem;
+    }
+    
+    .items-tabs {
+        display: flex;
+        justify-content: center;
+        margin: 2rem 0;
+        gap: 1rem;
+    }
+    
+    .items-tab {
+        padding: 0.75rem 1.5rem;
+        background: var(--card-bg);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .items-tab.active {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .items-tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .empty-items {
+        text-align: center;
+        padding: 3rem;
+        background: var(--card-bg);
+        border-radius: 15px;
+    }
+    
+    .empty-items i {
+        font-size: 4rem;
+        color: var(--primary-light);
+        opacity: 0.5;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="my-items-header">
+    <div class="container">
+        <h1>My Items</h1>
+        <p>Manage your lost and found items</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="items-tabs">
+        <div class="items-tab active" data-filter="all">All Items</div>
+        <div class="items-tab" data-filter="lost">Lost Items</div>
+        <div class="items-tab" data-filter="found">Found Items</div>
+    </div>
+    
+    <div class="cards-grid" id="my-items-container">
+        {% for item in items %}
+            <div class="card animate-on-scroll fade-in" data-type="{{ item.item_type }}">
+                <div class="card-image" {% if item.images.first %}style="background-image: url('{{ item.images.first.image.url }}');"{% endif %}>
+                    {% if not item.images.first %}<i class="fas fa-image"></i>{% endif %}
+                    <div class="card-badge {% if item.item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                        {{ item.get_item_type_display }}
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">{{ item.name }}</h3>
+                    <div class="card-info">
+                        <p><i class="fas fa-map-marker-alt"></i> {{ item.location }}</p>
+                        <p><i class="fas fa-calendar-alt"></i> {{ item.date_lost_found }}</p>
+                    </div>
+                    <p class="card-description">{{ item.description|truncatechars:100 }}</p>
+                    <div class="card-actions">
+                        <a href="{% url 'item_new' item.id %}" class="card-btn details-btn">
+                            <i class="fas fa-info-circle"></i> Details
+                        </a>
+                        <a href="{% url 'update_item' item.id %}" class="card-btn edit-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-items">
+                <i class="fas fa-box-open"></i>
+                <h3>No Items Yet</h3>
+                <p>You haven't reported any lost or found items yet.</p>
+                <a href="{% url 'add_item' %}" class="btn primary-btn">
+                    <i class="fas fa-plus"></i> Add Item
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter tabs functionality
+        const tabs = document.querySelectorAll('.items-tab');
+        const items = document.querySelectorAll('.card');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Get filter value
+                const filter = this.getAttribute('data-filter');
+                
+                // Filter items
+                items.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-type') === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Initialize animations
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+    });
+</script>
+{% endblock %}

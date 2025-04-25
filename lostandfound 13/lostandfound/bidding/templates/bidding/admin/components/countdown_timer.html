@@ -1,0 +1,70 @@
+{% comment %}
+    File: templates/bidding/components/countdown_timer.html
+    This component displays a countdown timer for an auction
+{% endcomment %}
+
+<div class="auction-countdown" data-item-id="{{ bid_item.id }}">
+    <div class="card bg-navy-blue-dark mb-4">
+        <div class="card-body text-center">
+            <h5 class="text-white mb-3">Time Remaining</h5>
+            {% if bid_item.status == 'active' and not bid_item.has_ended %}
+                <div class="countdown-timer-display">
+                    <div class="fs-2 fw-bold text-accent">
+                        <span class="time-remaining">{{ bid_item.time_remaining }}</span>
+                    </div>
+                    <div class="text-white-50 mt-2">
+                        Ends on {{ bid_item.end_date|date:"M d, Y H:i" }}
+                    </div>
+                </div>
+            {% elif bid_item.status == 'sold' %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-gavel me-2"></i> This auction has ended.
+                    <div class="small mt-2">Sold on {{ bid_item.updated_at|date:"M d, Y" }}</div>
+                </div>
+            {% elif bid_item.status == 'expired' %}
+                <div class="alert alert-secondary mb-0">
+                    <i class="fas fa-hourglass-end me-2"></i> This auction has expired.
+                    <div class="small mt-2">Expired on {{ bid_item.end_date|date:"M d, Y" }}</div>
+                </div>
+            {% elif bid_item.status == 'pending' %}
+                <div class="alert alert-warning mb-0">
+                    <i class="fas fa-clock me-2"></i> This auction is pending approval.
+                </div>
+            {% else %}
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-times-circle me-2"></i> This auction is not active.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Only run if we have an active auction
+        if ($('.countdown-timer-display').length > 0) {
+            const itemId = $('.auction-countdown').data('item-id');
+            const timeElement = $('.time-remaining');
+            
+            function updateTimer() {
+                $.ajax({
+                    url: `/bidding/items/${itemId}/time-remaining/`,
+                    type: 'GET',
+                    success: function(data) {
+                        timeElement.text(data.time_remaining);
+                        
+                        // If auction has ended, reload the page
+                        if (data.has_ended) {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 3000);
+                        }
+                    }
+                });
+            }
+            
+            // Update every second
+            setInterval(updateTimer, 1000);
+        }
+    });
+</script>

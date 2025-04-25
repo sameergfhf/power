@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FindItBack{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <span>Found</span><span class="highlight">It</span>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'bidding_home' %}" class="nav-link">Bidding</a>
+            <a href="{% url 'item_list' %}" class="nav-link">Items</a>
+            <a href="{% url 'faq' %}" class="nav-link">FAQs</a>
+            <a href="{% url 'main' %}" class="nav-link">Home</a>
+            {% if user == item.user or admin == item.admin %}
+            <a href="{% url 'manage_claims' %}" class="nav-link">Claims</a>
+            
+            
+           
+            {% endif %}
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_items' %}" class="nav-link">My Items</a>
+                <a href="{% url 'profile_page' %}" class="nav-link">Profile</a>
+                <a href="{% url 'logout' %}" class="nav-link login-btn">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link login-btn">Login</a>
+                <a href="{% url 'signup' %}" class="nav-link">Register</a>
+            {% endif %}
+            
+            <a href="{% url 'add_item' %}" class="nav-link lost-btn">Report Item</a>
+        </div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                    <span class="close-message">&times;</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo">
+                    <span>Found</span><span class="highlight">It</span>
+                </div>
+                <p>Reuniting people with their valuables since 2018.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <a href="#">About Us</a>
+                    <a href="#">Our Team</a>
+                    <a href="#">Careers</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <a href="{% url 'item_list' %}?type=lost">Lost Item Reporting</a>
+                    <a href="{% url 'item_list' %}?type=found">Found Item Submission</a>
+                    <a href="#">Premium Recovery</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="{% url 'faq' %}">FAQs</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 FoundIt. All rights reserved.</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

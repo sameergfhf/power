@@ -1,0 +1,75 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}Manage Bid Items{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-accent">Dashboard</a></li>
+            <li class="breadcrumb-item active">Manage Items</li>
+        </ol>
+    </nav>
+
+    <div class="card bg-navy-blue-light">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="text-accent mb-0">Manage Bid Items</h2>
+            <div class="btn-group">
+                <a href="{% url 'bid_items_list' %}" class="btn btn-outline-accent {% if not status_filter %}active{% endif %}">All</a>
+                <a href="{% url 'bid_items_list' %}?status=active" class="btn btn-outline-accent {% if status_filter == 'active' %}active{% endif %}">Active</a>
+                <a href="{% url 'bid_items_list' %}?status=sold" class="btn btn-outline-accent {% if status_filter == 'sold' %}active{% endif %}">Sold</a>
+                <a href="{% url 'bid_items_list' %}?status=expired" class="btn btn-outline-accent {% if status_filter == 'expired' %}active{% endif %}">Expired</a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-accent">Title</th>
+                                <th class="text-accent">Seller</th>
+                                <th class="text-accent">Current Price</th>
+                                <th class="text-accent">Status</th>
+                                <th class="text-accent">Created</th>
+                                <th class="text-accent">End Date</th>
+                                <th class="text-accent">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'bid_item_detail' item.id %}" class="text-accent">{{ item.title }}</a>
+                                </td>
+                                <td>{{ item.user.username }}</td>
+                                <td>${{ item.current_price }}</td>
+                                <td>
+                                    {% if item.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% elif item.status == 'sold' %}
+                                        <span class="badge bg-info">Sold</span>
+                                    {% elif item.status == 'expired' %}
+                                        <span class="badge bg-secondary">Expired</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.created_at|date:"M d, Y" }}</td>
+                                <td>{{ item.end_date|date:"M d, Y"|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-sm btn-accent">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert bg-navy-secondary">
+                    No items found matching the selected criteria.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

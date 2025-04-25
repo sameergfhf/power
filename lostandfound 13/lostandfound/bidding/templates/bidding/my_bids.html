@@ -1,0 +1,194 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}My Bids{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6 px-4">
+    <h1 class="text-2xl font-bold mb-6">My Bids</h1>
+    
+    <div class="stats shadow mb-6 bg-navy-blue grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="stat">
+            <div class="stat-title text-gray-300">Total Bids</div>
+            <div class="stat-value text-white">{{ user_bids.count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title text-gray-300">Items Bid On</div>
+            <div class="stat-value text-white">{{ bid_items.count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title text-gray-300">Currently Winning</div>
+            <div class="stat-value text-green-400">{{ winning_bids|length }}</div>
+        </div>
+    </div>
+    
+    {% if bid_items %}
+        <div class="bg-navy-blue-light rounded-lg shadow-lg p-4 mb-6">
+            <h2 class="text-xl font-bold mb-4">Items I've Bid On</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-white">Item</th>
+                            <th class="text-white">Current Price</th>
+                            <th class="text-white">My Highest Bid</th>
+                            <th class="text-white">Status</th>
+                            <th class="text-white">Time Remaining</th>
+                            <th class="text-white">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bid_items %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center space-x-3">
+                                    {% if item.image %}
+                                    <div class="avatar">
+                                        <div class="w-16 h-16 rounded">
+                                            <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="avatar placeholder">
+                                        <div class="w-16 h-16 rounded bg-gray-700">
+                                            <span class="text-xl">{{ item.title|first }}</span>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="font-bold">{{ item.title }}</div>
+                                        <div class="text-sm opacity-50">by {{ item.user.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${{ item.current_price }}</td>
+                            <td>
+                                {% with my_highest_bid=item.bids.filter|dictsort:"amount"|last %}
+                                    ${{ my_highest_bid.amount }}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% if item.status == 'active' %}
+                                    {% if item.id in winning_bids %}
+                                    <span class="badge bg-green-500 text-white">Winning</span>
+                                    {% else %}
+                                    <span class="badge bg-yellow-500 text-white">Outbid</span>
+                                    {% endif %}
+                                {% elif item.status == 'sold' %}
+                                    {% if item.highest_bidder == request.user %}
+                                    <span class="badge bg-blue-500 text-white">Won</span>
+                                    {% else %}
+                                    <span class="badge bg-red-500 text-white">Lost</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-gray-500 text-white">{{ item.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status == 'active' %}
+                                <span class="time-remaining" data-item-id="{{ item.id }}">{{ item.time_remaining }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-sm bg-cyan-600 hover:bg-cyan-700 text-white">View</a>
+                                
+                                {% if item.status == 'active' %}
+                                <a href="{% url 'bid_item_detail' item.id %}#place-bid" class="btn btn-sm bg-green-600 hover:bg-green-700 text-white">Bid Again</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="bg-navy-blue-light rounded-lg shadow-lg p-4">
+            <h2 class="text-xl font-bold mb-4">Bid History</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-white">Item</th>
+                            <th class="text-white">Bid Amount</th>
+                            <th class="text-white">Date</th>
+                            <th class="text-white">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bid in user_bids %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'bid_item_detail' bid.bid_item.id %}" class="font-semibold hover:text-cyan-400">
+                                    {{ bid.bid_item.title }}
+                                </a>
+                            </td>
+                            <td>${{ bid.amount }}</td>
+                            <td>{{ bid.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if bid.bid_item.status == 'active' %}
+                                    {% if bid.bid_item.highest_bidder == request.user and bid == bid.bid_item.bids.first %}
+                                    <span class="badge bg-green-500 text-white">Highest Bid</span>
+                                    {% else %}
+                                    <span class="badge bg-yellow-500 text-white">Outbid</span>
+                                    {% endif %}
+                                {% elif bid.bid_item.status == 'sold' %}
+                                    {% if bid == bid.bid_item.bids.first %}
+                                    <span class="badge bg-blue-500 text-white">Won</span>
+                                    {% else %}
+                                    <span class="badge bg-red-500 text-white">Lost</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-gray-500 text-white">{{ bid.bid_item.status|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-navy-blue-light rounded-lg shadow-lg p-6 text-center">
+            <h2 class="text-xl font-bold mb-4">No Bids Yet</h2>
+            <p class="mb-4">You haven't placed any bids yet.</p>
+            <a href="{% url 'bid_item_list' %}" class="btn bg-cyan-600 hover:bg-cyan-700 text-white">
+                <i class="fas fa-gavel mr-2"></i> Browse Auctions
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const timeElements = document.querySelectorAll('.time-remaining');
+        
+        function updateTimeRemaining() {
+            timeElements.forEach(el => {
+                const itemId = el.dataset.itemId;
+                
+                fetch(`/bidding/items/${itemId}/time-remaining/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        el.textContent = data.time_remaining;
+                        
+                        if (data.has_ended) {
+                            el.classList.add('text-red-500');
+                        }
+                    });
+            });
+        }
+        
+        if (timeElements.length > 0) {
+            setInterval(updateTimeRemaining, 30000);
+        }
+    });
+</script>
+{% endblock %}

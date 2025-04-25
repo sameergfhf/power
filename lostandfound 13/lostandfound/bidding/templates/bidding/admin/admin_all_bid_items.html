@@ -1,0 +1,138 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}All Bid Items - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">All Bid Items</h1>
+        <a href="{% url 'admin_bid_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="card bg-navy-blue shadow mb-4">
+        <div class="card-header bg-navy-blue-dark">
+            <h5 class="card-title mb-0">Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select bg-navy-blue-light text-white">
+                        <option value="all" {% if status == 'all' %}selected{% endif %}>All Status</option>
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending Approval</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="sold" {% if status == 'sold' %}selected{% endif %}>Sold</option>
+                        <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expired</option>
+                        <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="sort_by" class="form-label">Sort By</label>
+                    <select name="sort_by" id="sort_by" class="form-select bg-navy-blue-light text-white">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="-current_price" {% if sort_by == '-current_price' %}selected{% endif %}>Highest Price</option>
+                        <option value="current_price" {% if sort_by == 'current_price' %}selected{% endif %}>Lowest Price</option>
+                        <option value="end_date" {% if sort_by == 'end_date' %}selected{% endif %}>Ending Soon</option>
+                        <option value="-end_date" {% if sort_by == '-end_date' %}selected{% endif %}>Ending Last</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-navy-blue shadow">
+        <div class="card-header bg-navy-blue-dark">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Bid Items</h5>
+                <span class="badge bg-primary">{{ bid_items.count }} items</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped text-white mb-0">
+                    <thead class="bg-navy-blue-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Current Price</th>
+                            <th>Bids</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bid_items %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-thumbnail" style="max-width: 50px;">
+                                {% else %}
+                                <span class="text-muted">No image</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.user.username }}</td>
+                            <td>
+                                {% if item.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif item.status == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                                {% elif item.status == 'sold' %}
+                                <span class="badge bg-info">Sold</span>
+                                {% elif item.status == 'expired' %}
+                                <span class="badge bg-secondary">Expired</span>
+                                {% elif item.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>${{ item.current_price }}</td>
+                            <td>{{ item.bid_count }}</td>
+                            <td>
+                                {% if item.start_date %}
+                                {{ item.start_date|date:"M d, Y H:i" }}
+                                {% else %}
+                                <span class="text-muted">Not started</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.end_date %}
+                                {{ item.end_date|date:"M d, Y H:i" }}
+                                {% else %}
+                                <span class="text-muted">Not set</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-info" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'admin_review_bid_item' item.id %}" class="btn btn-primary" title="Review">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center py-4">No bid items found matching your criteria.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

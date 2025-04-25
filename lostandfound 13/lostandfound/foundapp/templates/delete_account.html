@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Account | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 8rem auto 4rem;
+    }
+    
+    .warning-icon {
+        font-size: 4rem;
+        color: var(--danger-color);
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .delete-title {
+        color: var(--danger-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    .delete-warning {
+        background: rgba(244, 67, 54, 0.1);
+        border-left: 4px solid var(--danger-color);
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border-radius: 4px;
+    }
+    
+    .delete-warning ul {
+        margin-top: 1rem;
+        padding-left: 1.5rem;
+    }
+    
+    .delete-warning li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .confirm-check {
+        margin: 2rem 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .confirm-check input {
+        margin-right: 1rem;
+    }
+    
+    .danger-btn {
+        background: var(--danger-color);
+        color: white;
+    }
+    
+    .danger-btn:hover {
+        background: var(--danger-dark);
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="form-card animate-on-scroll fade-in">
+        <div class="form-header text-center">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1 class="delete-title">Delete Your Account</h1>
+            <p>This action is permanent and cannot be undone</p>
+        </div>
+        
+        <div class="delete-warning">
+            <p><strong>Warning:</strong> Deleting your account will:</p>
+            <ul>
+                <li>Permanently remove all your personal information</li>
+                <li>Delete all your reported items</li>
+                <li>Remove your access to this account</li>
+                <li>Cancel any ongoing communications regarding your items</li>
+            </ul>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Enter your password to confirm</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="error">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="confirm-check">
+                {{ form.confirm }}
+                <label for="{{ form.confirm.id_for_label }}">
+                    I understand that this action is permanent and cannot be undone
+                </label>
+            </div>
+            {% if form.confirm.errors %}
+                <div class="error">{{ form.confirm.errors }}</div>
+            {% endif %}
+            
+            <div class="form-actions">
+                <button type="submit" class="btn danger-btn">
+                    <i class="fas fa-user-times"></i> Permanently Delete Account
+                </button>
+                <a href="{% url 'profile_page' %}" class="btn secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

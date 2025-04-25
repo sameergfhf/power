@@ -1,0 +1,28 @@
+{% comment %}
+    File: templates/bidding/components/bid_history.html
+    This component displays the bid history for a specific item
+{% endcomment %}
+
+<div class="card bg-navy-blue shadow mb-4">
+    <div class="card-header bg-navy-blue-dark d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Bid History</h5>
+        <span class="badge bg-primary">{{ bid_history|length }} bids</span>
+    </div>
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+            {% for bid in bid_history %}
+                <li class="list-group-item bg-navy-blue-light text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ bid.user.username }}</strong>
+                        <span class="text-muted ms-2">{{ bid.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <span class="badge bg-success fs-6">${{ bid.amount }}</span>
+                </li>
+            {% empty %}
+                <li class="list-group-item bg-navy-blue-light text-white text-center py-4">
+                    No bids yet. Be the first to bid!
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

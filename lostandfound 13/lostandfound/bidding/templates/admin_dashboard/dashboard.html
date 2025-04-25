@@ -1,0 +1,434 @@
+<!-- admin_dashboard/templates/admin_dashboard/dashboard.html -->
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block header %}Bidding Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Stats Row -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary-gradient">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p>Total Items</p>
+                        <h3>{{ total_items }}</h3>
+                    </div>
+                    <i class="fas fa-box fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success-gradient">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p>Active Auctions</p>
+                        <h3>{{ active_items }}</h3>
+                    </div>
+                    <i class="fas fa-gavel fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning-gradient">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p>Total Bids</p>
+                        <h3>{{ total_bids }}</h3>
+                    </div>
+                    <i class="fas fa-receipt fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-danger-gradient">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p>Total Revenue</p>
+                        <h3>${{ revenue }}</h3>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Bidding Activity</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary">Daily</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary">Weekly</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary">Monthly</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Item Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-primary p-2">Active: {{ active_items }}</span>
+                            </div>
+                            <div>
+                                <span class="badge bg-success p-2">Sold: {{ sold_items }}</span>
+                            </div>
+                            <div>
+                                <span class="badge bg-secondary p-2">Expired: {{ expired_items }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Table Widgets Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Bids</h5>
+                    <a href="{% url 'manage_bids' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Item</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bid in recent_bids %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'user_detail' bid.user.id %}">
+                                            {{ bid.user.username }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'item_detail' bid.bid_item.id %}">
+                                            {{ bid.bid_item.title }}
+                                        </a>
+                                    </td>
+                                    <td>${{ bid.amount }}</td>
+                                    <td>{{ bid.created_at }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No recent bids found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Ending Soon</h5>
+                    <a href="{% url 'manage_items' %}?status=active" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                   <th>Current Price</th>
+                                    <th>Bids</th>
+                                    <th>Time Left</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in ending_soon %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'item_detail' item.id %}">
+                                            {{ item.title }}
+                                        </a>
+                                    </td>
+                                    <td>${{ item.current_price }}</td>
+                                    <td>{{ item.bid_count }}</td>
+                                    <td>{{ item.time_remaining }}</td>
+                                   <!-- In the "Ending Soon" table in dashboard.html -->
+   <!-- Replace the original End Now button with this one -->
+<td>
+    <a href="{% url 'end_auction' item.id %}" class="btn btn-sm btn-warning">
+        End Now
+    </a>
+</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No items ending soon</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Widgets Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Bidders</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Total Bids</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_bidders %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'user_detail' user.id %}">
+                                            {{ user.username }}
+                                        </a>
+                                    </td>
+                                    <td>{{ user.bid_count }}</td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'user_detail' user.id %}" class="btn btn-sm btn-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No top bidders found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Most Active Items</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Current Price</th>
+                                    <th>Bids</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in active_bid_items %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'item_detail' item.id %}">
+                                            {{ item.title }}
+                                        </a>
+                                    </td>
+                                    <td>${{ item.current_price }}</td>
+                                    <td>{{ item.bid_count }}</td>
+                                    <td>
+                                        <a href="{% url 'item_detail' item.id %}" class="btn btn-sm btn-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No active items found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activity Chart - Using real data from the server
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    
+    // We'll use data that would come from your Django view
+    // You mentioned you're collecting daily_bids in your analytics view
+    // This is how we would integrate it
+    const activityLabels = [{% for item in daily_bids %}'{{ item.date }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const activityData = [{% for item in daily_bids %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+    
+    // If no data is available, provide defaults
+    const defaultLabels = ['6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday', 'Today'];
+    const defaultData = [0, 0, 0, 0, 0, 0, 0];
+    
+    const activityChart = new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: activityLabels.length > 0 ? activityLabels : defaultLabels,
+            datasets: [{
+                label: 'New Bids',
+                data: activityData.length > 0 ? activityData : defaultData,
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 2,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Status Chart - Using real data from template context
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Sold', 'Expired'],
+            datasets: [{
+                label: 'Item Status',
+                data: [{{ active_items }}, {{ sold_items }}, {{ expired_items }}],
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(149, 165, 166, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(149, 165, 166, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Check if charts are initialized properly
+    console.log("Activity Chart initialized:", activityChart !== undefined);
+    console.log("Status Chart initialized:", statusChart !== undefined);
+    
+    // Function to check if a chart is rendering properly
+    function checkChartRendering(chart, name) {
+        if (chart && chart.canvas) {
+            console.log(`${name} is rendering properly.`);
+            return true;
+        } else {
+            console.error(`${name} is not rendering properly.`);
+            return false;
+        }
+    }
+    
+    // Check both charts
+    window.addEventListener('load', function() {
+        checkChartRendering(activityChart, 'Activity Chart');
+        checkChartRendering(statusChart, 'Status Chart');
+    });
+    
+    // End Auction Functionality
+    document.querySelectorAll('.end-auction').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to end this auction now?')) {
+                fetch(`/admin-dashboard/items/${itemId}/end/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Auction ended successfully');
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+    
+    // Get CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

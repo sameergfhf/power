@@ -1,0 +1,262 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}User Details | Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'manage_users' %}">Manage Users</a></li>
+            <li class="breadcrumb-item active" aria-current="page">User Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- User Profile Info -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User Profile</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img class="img-profile rounded-circle mb-3" src="{% static 'admin_dashboard/img/undraw_profile.svg' %}" width="100">
+                        <h4>{{ profile_user.username }}</h4>
+                        {% if profile_user.is_staff %}
+                            <span class="badge badge-primary">Admin</span>
+                        {% endif %}
+                        {% if profile_user.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="user-details">
+                        <div class="row mb-3">
+                            <div class="col-6 font-weight-bold">Full Name:</div>
+                            <div class="col-6">{{ profile_user.get_full_name|default:"Not provided" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 font-weight-bold">Email:</div>
+                            <div class="col-6">{{ profile_user.email|default:"Not provided" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 font-weight-bold">Date Joined:</div>
+                            <div class="col-6">{{ profile_user.date_joined|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 font-weight-bold">Last Login:</div>
+                            <div class="col-6">
+                                {% if profile_user.last_login %}
+                                    {{ profile_user.last_login|date:"M d, Y H:i" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-stats mt-4">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_items.count }}</div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Bid Items</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_bids.count }}</div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Bids</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Column -->
+        <div class="col-xl-8 col-lg-7">
+            <!-- User Bid Items -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User's Bid Items</h6>
+                    <span class="badge badge-info">{{ user_items.count }} Items</span>
+                </div>
+                <div class="card-body">
+                    {% if user_items %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="userItemsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Current Price</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>End Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in user_items %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.title }}</td>
+                                    <td>${{ item.current_price }}</td>
+                                    <td>
+                                        {% if item.status == 'active' %}
+                                            <span class="badge badge-success">Active</span>
+                                        {% elif item.status == 'sold' %}
+                                            <span class="badge badge-primary">Sold</span>
+                                        {% elif item.status == 'expired' %}
+                                            <span class="badge badge-secondary">Expired</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ item.end_date|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'item_detail' item.id %}" class="btn btn-info btn-sm">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-4">
+                        <p class="text-muted">This user has not created any bid items yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Bids -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User's Bids</h6>
+                    <span class="badge badge-info">{{ user_bids.count }} Bids</span>
+                </div>
+                <div class="card-body">
+                    {% if user_bids %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="userBidsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item</th>
+                                    <th>Bid Amount</th>
+                                    <th>Date/Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bid in user_bids %}
+                                <tr>
+                                    <td>{{ bid.id }}</td>
+                                    <td>{{ bid.bid_item.title }}</td>
+                                    <td>${{ bid.amount }}</td>
+                                    <td>{{ bid.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if bid.bid_item.bids.first.id == bid.id %}
+                                            <span class="badge badge-success">Highest</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Outbid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'item_detail' bid.bid_item.id %}" class="btn btn-info btn-sm">
+                                            View Item
+                                        </a>
+                                        <button class="btn btn-danger btn-sm delete-bid" 
+                                                data-toggle="modal" 
+                                                data-target="#deleteBidModal"
+                                                data-bid-id="{{ bid.id }}"
+                                                data-amount="{{ bid.amount }}"
+                                                data-item="{{ bid.bid_item.title }}">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-4">
+                        <p class="text-muted">This user has not placed any bids yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Bid Modal -->
+<div class="modal fade" id="deleteBidModal" tabindex="-1" role="dialog" aria-labelledby="deleteBidModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteBidModalLabel">Delete Bid</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this bid?</p>
+                <p><strong>Item:</strong> <span id="modalItemName"></span></p>
+                <p><strong>Amount:</strong> $<span id="modalBidAmount"></span></p>
+                <p class="text-danger">This action cannot be undone and may affect the current price of the item.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <form id="deleteBidForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Bid</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#userItemsTable').DataTable({
+            "paging": true,
+            "lengthMenu": [[5, 10, 25, -1], [5, 10, 25, "All"]],
+            "pageLength": 5,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
+        
+        $('#userBidsTable').DataTable({
+            "paging": true,
+            "lengthMenu": [[5, 10, 25, -1], [5, 10, 25, "All"]],
+            "pageLength": 5,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
+        
+        // Set up delete bid modal
+        $('.delete-bid').click(function() {
+            const bidId = $(this).data('bid-id');
+            const amount = $(this).data('amount');
+            const item = $(this).data('item');
+            
+            $('#modalItemName').text(item);
+            $('#modalBidAmount').text(amount);
+            $('#deleteBidForm').attr('action', `/admin_dashboard/delete_bid/${bidId}/`);
+        });
+    });
+</script>
+{% endblock %}

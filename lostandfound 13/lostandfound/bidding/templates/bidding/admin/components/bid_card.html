@@ -1,0 +1,29 @@
+{% comment %}
+    File: templates/bidding/components/bid_card.html
+    This component displays a single bid item card, used in listings
+{% endcomment %}
+
+<div class="card h-100">
+    {% if item.image %}
+        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 180px; object-fit: cover;">
+    {% else %}
+        <div class="bg-navy-blue-light text-center py-5">
+            <i class="fas fa-image fa-3x text-secondary"></i>
+        </div>
+    {% endif %}
+    <div class="card-body">
+        <h5 class="card-title">{{ item.title }}</h5>
+        <p class="card-text text-truncate">{{ item.description }}</p>
+        <p class="fw-bold">${{ item.current_price }}</p>
+        <p class="small">
+            <i class="far fa-clock"></i> 
+            <span class="time-remaining" data-item-id="{{ item.id }}">{{ item.time_remaining }}</span>
+        </p>
+        <p class="small">
+            <i class="fas fa-gavel"></i> {{ item.bid_count }} bid(s)
+        </p>
+    </div>
+    <div class="card-footer bg-transparent border-top-0">
+        <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-primary w-100">View Details</a>
+    </div>
+</div>

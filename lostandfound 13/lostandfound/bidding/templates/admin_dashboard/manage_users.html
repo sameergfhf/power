@@ -1,0 +1,155 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Manage Users | Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Manage Users</h1>
+        <div class="d-none d-sm-inline-block">
+            <span class="mr-2">Total Users: {{ page_obj.paginator.count }}</span>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Users</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="search" class="sr-only">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Search by username" value="{{ search_query }}">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Search</button>
+                {% if search_query %}
+                    <a href="{% url 'manage_users' %}" class="btn btn-secondary mb-2 ml-2">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="usersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Date Joined</th>
+                            <th>Last Login</th>
+                            <th>Bid Items</th>
+                            <th>Bids Placed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in page_obj %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                {{ user.username }}
+                                {% if user.is_staff %}<span class="badge badge-primary ml-1">Admin</span>{% endif %}
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"M d, Y H:i" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>{{ user.item_count }}</td>
+                            <td>{{ user.bid_count }}</td>
+                            <td>
+                                <a href="{% url 'user_detail' user.id %}" class="btn btn-info btn-sm">
+                                    View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; First</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Last &raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#usersTable').DataTable({
+            "paging": false,
+            "searching": false,
+            "ordering": true,
+            "info": false,
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }}'s Profile | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="container">
+            <div class="profile-header-content">
+                <div class="profile-avatar">
+                    <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}'s profile image">
+                </div>
+                <div class="profile-info">
+                    <h1>{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="username">@{{ user.username }}</p>
+                    <p class="member-since">Member since {{ user.date_joined|date:"F Y" }}</p>
+                    <div class="profile-actions">
+                        <a href="{% url 'update_profile' %}" class="btn primary-btn">
+                            <i class="fas fa-user-edit"></i> Edit Profile
+                        </a>
+                        <a href="{% url 'delete_account' %}" class="btn danger-btn">
+                            <i class="fas fa-user-times"></i> Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="profile-body">
+        <div class="container">
+            <div class="profile-grid">
+                <div class="profile-card user-info">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user"></i> User Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">{{ user.get_full_name|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ user.profile.phone|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Bio</span>
+                            <span class="info-value bio">{{ user.profile.bio|default:"No bio provided"|linebreaks }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-card stats">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-pie"></i> Activity Stats</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ lost_items }}</div>
+                                <div class="stat-label">Lost Items</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ found_items }}</div>
+                                <div class="stat-label">Found Items</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ resolved_items }}</div>
+                                <div class="stat-label">Resolved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-card recent-items">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                        <a href="{% url 'my_items' %}" class="view-all">View All</a>
+                    </div>
+                    <div class="card-body">
+                        {% if user_items %}
+                            <div class="items-list">
+                                {% for item in user_items %}
+                                    <div class="item-entry">
+                                        <div class="item-image">
+                                            {% if item.images.first %}
+                                                <img src="{{ item.images.first.image.url }}" alt="{{ item.name }}">
+                                            {% else %}
+                                                <div class="no-image">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="item-details">
+                                            <h3>{{ item.name }}</h3>
+                                            <div class="item-meta">
+                                                <span class="item-type {% if item.item_type == 'lost' %}lost{% else %}found{% endif %}">
+                                                    {{ item.get_item_type_display }}
+                                                </span>
+                                                <span class="item-date">{{ item.date_created|date:"M d, Y" }}</span>
+                                            </div>
+                                            <div class="item-status">
+                                                {% if item.is_resolved %}
+                                                    <span class="status resolved">Resolved</span>
+                                                {% else %}
+                                                    <span class="status active">Active</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'profile_page'  %}" class="item-link">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <p>You haven't reported any items yet.</p>
+                                <a href="{% url 'add_item' %}" class="btn primary-btn">Report an Item</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

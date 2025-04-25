@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/faqs.css' %}">
+  <style>
+    .admin-reply {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      color: black;
+    }
+
+    .admin-reply strong {
+      color: black;
+    }
+
+    .delete-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      float: right; /* Float to the right */
+    }
+
+    .delete-button:hover {
+      background-color: #c82333;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <header class="header">
+    <div class="header-content">
+      <h1 class="animate-on-scroll fade-in">Frequently Asked Questions</h1>
+      <p class="animate-on-scroll fade-in">Find answers to common questions about our lost and found service.</p>
+      <div class="search-container animate-on-scroll fade-in">
+        <input type="text" id="faq-search" placeholder="Search questions...">
+        <button class="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <section class="faq-categories">
+    <div class="container">
+      <div class="category-tabs">
+        <button class="category-tab active" data-category="all">All Questions</button>
+        <button class="category-tab" data-category="general">General</button>
+        <button class="category-tab" data-category="reporting">Reporting Items</button>
+        <button class="category-tab" data-category="finding">Finding Items</button>
+        <button class="category-tab" data-category="account">Account & Privacy</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="faqs-section">
+    <div class="container">
+      <div class="faqs-container" id="faqs-container">
+        {% for question in questions %}
+          <div class="faq-item" style="position: relative;"> <p>{{ question.question }}</p>
+            <p class="submitted-at">Submitted at: {{ question.submitted_at }}</p>
+            {% if question.reply %}
+              <div class="admin-reply">
+                <strong>Admin Reply:</strong>
+                <p>{{ question.reply }}</p>
+              </div>
+            {% endif %}
+            <a href="{% url 'faq_delete_question' question.id %}" class="delete-button">Delete</a>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="support-card animate-on-scroll fade-in">
+        <div class="support-content">
+          <h3>Couldn't find what you're looking for?</h3>
+          <p>Our support team is ready to assist you with any questions or concerns.</p>
+          <a href="#" class="btn primary-btn">Contact Support</a>
+        </div>
+        <div class="support-image">
+          <i class="fas fa-headset"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="add-question-section">
+    <div class="container">
+      <h3 class="add-question-heading">Ask a Question</h3>
+      <form method="post" action="{% url 'submit_question' %}">
+        {% csrf_token %}
+        <textarea name="question" placeholder="Type your question here..." required></textarea>
+        <button type="submit" class="btn primary-btn">Submit Question</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

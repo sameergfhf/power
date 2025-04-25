@@ -1,0 +1,164 @@
+{% extends 'work.html' %}
+{% load static %}
+
+{% block title %}My Bid Items{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6 px-4">
+    <h1 class="text-2xl font-bold mb-6">My Bid Items</h1>
+    
+    <div class="stats bg-navy-blue shadow mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="stat">
+            <div class="stat-title text-gray-300">Total Items</div>
+            <div class="stat-value text-white">{{ user_items.count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title text-gray-300">Active</div>
+            <div class="stat-value text-green-400">{{ active_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title text-gray-300">Sold</div>
+            <div class="stat-value text-blue-400">{{ sold_count }}</div>
+        </div>
+    </div>
+    
+    <div class="mb-6">
+        <a href="{% url 'add_bid_item' %}" class="btn bg-cyan-600 hover:bg-cyan-700 text-white">
+            <i class="fas fa-plus mr-2"></i> Add New Item
+        </a>
+    </div>
+    
+    {% if user_items %}
+        <div class="bg-navy-blue-light rounded-lg shadow-lg p-4 mb-6">
+            <h2 class="text-xl font-bold mb-4">My Items</h2>
+            
+            <div class="tabs mb-4">
+                <a class="tab tab-bordered text-white tab-active" id="tab-all">All</a>
+                <a class="tab tab-bordered text-white" id="tab-active">Active</a>
+                <a class="tab tab-bordered text-white" id="tab-sold">Sold</a>
+                <a class="tab tab-bordered text-white" id="tab-expired">Expired</a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-white">Item</th>
+                            <th class="text-white">Current Price</th>
+                            <th class="text-white">Status</th>
+                            <th class="text-white">Bids</th>
+                            <th class="text-white">Time Remaining</th>
+                            <th class="text-white">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in user_items %}
+                        <tr class="item-row" data-status="{{ item.status }}">
+                            <td>
+                                <div class="flex items-center space-x-3">
+                                    {% if item.image %}
+                                    <div class="avatar">
+                                        <div class="w-16 h-16 rounded">
+                                            <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="avatar placeholder">
+                                        <div class="w-16 h-16 rounded bg-gray-700">
+                                            <span class="text-xl">{{ item.title|first }}</span>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="font-bold">{{ item.title }}</div>
+                                        <div class="text-sm opacity-50">Added on {{ item.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${{ item.current_price }}</td>
+                            <td>
+                                {% if item.status == 'active' %}
+                                <span class="badge bg-green-500 text-white">Active</span>
+                                {% elif item.status == 'sold' %}
+                                <span class="badge bg-blue-500 text-white">Sold</span>
+                                {% elif item.status == 'expired' %}
+                                <span class="badge bg-gray-500 text-white">Expired</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.bid_count }}</td>
+                            <td>
+                                {% if item.status == 'active' %}
+                                <span class="time-remaining" data-item-id="{{ item.id }}">{{ item.time_remaining }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-sm bg-cyan-600 hover:bg-cyan-700 text-white">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-navy-blue-light rounded-lg shadow-lg p-6 text-center">
+            <h2 class="text-xl font-bold mb-4">No Items Yet</h2>
+            <p class="mb-4">You haven't listed any items for bidding yet.</p>
+            <a href="{% url 'add_bid_item' %}" class="btn bg-cyan-600 hover:bg-cyan-700 text-white">
+                <i class="fas fa-plus mr-2"></i> Add New Item
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab');
+        const itemRows = document.querySelectorAll('.item-row');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('tab-active'));
+                this.classList.add('tab-active');
+                
+                const status = this.id.replace('tab-', '');
+                
+                itemRows.forEach(row => {
+                    if (status === 'all' || row.dataset.status === status) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        const timeElements = document.querySelectorAll('.time-remaining');
+        
+        function updateTimeRemaining() {
+            timeElements.forEach(el => {
+                const itemId = el.dataset.itemId;
+                
+                fetch(`/bidding/items/${itemId}/time-remaining/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        el.textContent = data.time_remaining;
+                        
+                        if (data.has_ended) {
+                            el.classList.add('text-red-500');
+                        }
+                    });
+            });
+        }
+        
+        if (timeElements.length > 0) {
+            setInterval(updateTimeRemaining, 30000);
+        }
+    });
+</script>
+{% endblock %}

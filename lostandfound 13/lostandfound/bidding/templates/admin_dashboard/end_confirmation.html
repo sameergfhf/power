@@ -1,0 +1,38 @@
+<!-- bidding/templates/bidding/end_confirmation.html -->
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Confirm End Auction{% endblock %}
+
+{% block header %}End Auction Confirmation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">End Auction Confirmation</h5>
+            </div>
+            <div class="card-body">
+                <h4>Are you sure you want to end this auction?</h4>
+                
+                <div class="alert alert-warning">
+                    <p><strong>Item:</strong> {{ item.title }}</p>
+                    <p><strong>Current Price:</strong> ${{ item.current_price }}</p>
+                    <p><strong>Total Bids:</strong> {{ item.bid_count }}</p>
+                    <p><strong>Original End Time:</strong> {{ item.end_date }}</p>
+                </div>
+                
+                <p>Ending this auction now will finalize the current highest bid and close bidding immediately.</p>
+                
+                <form method="post" action="{% url 'end_auction_confirm' item.id %}">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-warning">End Auction Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

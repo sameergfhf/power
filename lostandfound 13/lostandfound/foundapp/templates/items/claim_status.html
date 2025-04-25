@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Claim Status | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/claims.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container claim-status-container">
+    <div class="breadcrumb">
+        <a href="{% url 'main' %}">Home</a> &gt;
+        <a href="{% url 'item_new' claim.item.id %}">{{ claim.item.name }}</a> &gt;
+        <span>Claim Status</span>
+    </div>
+    
+    <div class="claim-status-card">
+        <div class="claim-header">
+            <h1>Your Claim Status</h1>
+            <div class="claim-badge status-{{ claim.status }}">{{ claim.get_status_display }}</div>
+        </div>
+        
+        <div class="claim-content">
+            <div class="claim-info">
+                <div class="info-row">
+                    <span class="info-label">Item:</span>
+                    <span class="info-value">{{ claim.item.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Claim Type:</span>
+                    <span class="info-value">{{ claim.get_claim_type_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Submitted:</span>
+                    <span class="info-value">{{ claim.created_at }}</span>
+                </div>
+                
+                {% if claim.claim_type == 'found' %}
+                    <div class="info-row">
+                        <span class="info-label">Found Location:</span>
+                        <span class="info-value">{{ claim.found_location }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Found Date:</span>
+                        <span class="info-value">{{ claim.found_date }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Details:</span>
+                        <div class="info-value">{{ claim.found_description }}</div>
+                    </div>
+                {% else %}
+                    <div class="info-row">
+                        <span class="info-label">Ownership Proof:</span>
+                        <div class="info-value">{{ claim.ownership_proof }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if claim.image %}
+                    <div class="info-row">
+                        <span class="info-label">Image:</span>
+                        <div class="info-value">
+                            <img src="{{ claim.image.url }}" alt="Claim image" class="claim-image">
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if claim.status == 'pending' %}
+                    <div class="claim-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Your claim is under review. The owner will respond shortly.</p>
+                    </div>
+                {% elif claim.status == 'approved' %}
+                    <div class="claim-message success">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Congratulations! Your claim has been approved.</p>
+                        {% if claim.reviewer_notes %}
+                            <div class="reviewer-notes">
+                                <h3>Notes from the {{ claim.item.item_type|yesno:"owner,finder" }}:</h3>
+                                <p>{{ claim.reviewer_notes }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="claim-message error">
+                        <i class="fas fa-times-circle"></i>
+                        <p>We're sorry! Your claim has been rejected.</p>
+                        {% if claim.reviewer_notes %}
+                            <div class="reviewer-notes">
+                                <h3>Notes from the {{ claim.item.item_type|yesno:"owner,finder" }}:</h3>
+                                <p>{{ claim.reviewer_notes }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="claim-actions">
+                <a href="{% url 'item_new' claim.item.id %}" class="btn secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Item
+                </a>
+                
+                {% if claim.status == 'approved' %}
+                    <a href="mailto:{{ claim.item.contact_email }}" class="btn primary-btn">
+                        <i class="fas fa-envelope"></i> Contact {{ claim.item.item_type|yesno:"Owner,Finder" }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

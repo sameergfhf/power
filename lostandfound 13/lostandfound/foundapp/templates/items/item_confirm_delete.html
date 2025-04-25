@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete {{ item.name }} | FoundIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 8rem auto 4rem;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: var(--box-shadow);
+    }
+    
+    .delete-warning {
+        color: #f44336;
+        font-size: 4rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .delete-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .delete-message {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .delete-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .cancel-btn {
+        background: var(--card-bg);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .delete-btn {
+        background: #f44336;
+        color: white;
+    }
+    
+    .delete-btn:hover {
+        background: #d32f2f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h1 class="delete-title">Delete Item</h1>
+    <p class="delete-message">Are you sure you want to delete "{{ item.name }}"? This action cannot be undone.</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="delete-actions">
+            <a href="{% url 'item_new' item.id %}" class="btn cancel-btn">Cancel</a>
+            <form method="POST" action="{% url 'item_new' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn delete-btn">Delete</button>
+            </form>
+            
+        </div>
+    </form>
+</div>
+{% endblock %}

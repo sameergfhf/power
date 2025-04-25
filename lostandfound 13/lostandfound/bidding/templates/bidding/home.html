@@ -1,0 +1,153 @@
+{% extends 'work.html' %}
+
+{% block title %}Bid & Found - Online Bidding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5 py-5 align-items-center">
+        <div class="col-md-6 animate__animated animate__fadeInLeft">
+            <h1 class="text-accent display-4 fw-bold">Lost something valuable?</h1>
+            <h2 class="text-secondary h3 mb-4">Find it or bid on other treasures</h2>
+            <p class="lead mb-4">Welcome to Bid & Found - where lost becomes found through our community bidding system.</p>
+            <div class="d-flex gap-3">
+                <a href="{% url 'bid_item_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search"></i> Browse Auctions
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'add_bid_item' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-plus"></i> Add Item
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Get Started
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6 text-center animate__animated animate__fadeInRight">
+            <img src="{% url 'bidding_image' 'bidding.jpeg' %}" class="img-fluid rounded shadow" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350?text=Bid+%26+Found';" alt="Bid Item">
+        </div>
+    </div>
+    
+    <!-- Featured Auctions -->
+    <section class="mb-5">
+        <h2 class="text-accent mb-4 animate-on-scroll">Active Auctions</h2>
+        <div class="row">
+            {% if active_items %}
+                {% for item in active_items %}
+                    <div class="col-md-3 col-sm-6 mb-4 animate-on-scroll">
+                        <div class="card h-100">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 180px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-navy-blue-light text-center py-5">
+                                    <i class="fas fa-image fa-3x text-secondary"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.title }}</h5>
+                                <p class="card-text text-truncate">{{ item.description }}</p>
+                                <p class="fw-bold">${{ item.current_price }}</p>
+                                <p class="small">
+                                    <i class="far fa-clock"></i> 
+                                    <span class="time-remaining" data-item-id="{{ item.id }}">{{ item.time_remaining }}</span>
+                                </p>
+                                <p class="small">
+                                    <i class="fas fa-gavel"></i> {{ item.bid_count }} bid(s)
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                {% if user.is_authenticated %}
+                                    <div class="quick-bid-form mb-2">
+                                        <form method="post" action="{% url 'place_bid' item.id %}" class="d-flex">
+                                            {% csrf_token %}
+                                            <input type="number" name="amount" class="form-control form-control-sm me-2" 
+                                                value="{{ item.current_price|add:item.min_increment }}" 
+                                                min="{{ item.current_price|add:item.min_increment }}" 
+                                                step="0.01">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-gavel"></i> Bid
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                                <a href="{% url 'bid_item_detail' item.id %}" class="btn btn-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p>No active auctions at the moment.</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'bid_item_list' %}" class="btn btn-outline-light">View All Auctions</a>
+        </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="mb-5">
+        <h2 class="text-accent mb-4 animate-on-scroll">How It Works</h2>
+        <div class="row text-center">
+            <div class="col-md-4 mb-4 animate-on-scroll">
+                <div class="card h-100 p-4">
+                    <div class="text-accent mb-3">
+                        <i class="fas fa-upload fa-3x"></i>
+                    </div>
+                    <h4 style="color:#64ffda;">1. List Your Item</h4>
+                    <p style="color:#64ffda;">Upload details about your lost or found item and set a starting price.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 animate-on-scroll">
+                <div class="card h-100 p-4">
+                    <div class="text-accent mb-3">
+                        <i class="fas fa-gavel fa-3x"></i>
+                    </div>
+                    <h4 style="color:#64ffda;">2. Start Bidding</h4>
+                    <p style="color:#64ffda;">Your item goes live immediately for bidding. Users can place bids until the auction ends.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 animate-on-scroll">
+                <div class="card h-100 p-4">
+                    <div class="text-accent mb-3">
+                        <i class="fas fa-handshake fa-3x"></i>
+                    </div>
+                    <h4 style="color:#64ffda;">3. Complete the Deal</h4>
+                    <p style="color:#64ffda;">When the auction ends, the highest bidder wins. Connect with the seller to finalize the exchange.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        function updateTimeRemaining() {
+            $('.time-remaining').each(function() {
+                const itemId = $(this).data('item-id');
+                const timeElement = $(this);
+                
+                $.ajax({
+                    url: `/bidding/items/${itemId}/time-remaining/`,
+                    type: 'GET',
+                    success: function(data) {
+                        timeElement.text(data.time_remaining);
+                        if (data.has_ended) {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 5000);
+                        }
+                    }
+                });
+            });
+        }
+        
+        setInterval(updateTimeRemaining, 5000);
+    });
+</script>
+{% endblock %}

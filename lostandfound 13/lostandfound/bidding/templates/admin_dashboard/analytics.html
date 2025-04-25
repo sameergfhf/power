@@ -1,0 +1,287 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Analytics | Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Analytics Dashboard</h1>
+    
+    <!-- Activity Charts Row -->
+    <div class="row">
+        <!-- Daily Bids Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Daily Bids (Last 7 Days)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="dailyBidsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Daily Items Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">New Items (Last 7 Days)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="dailyItemsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Distribution Charts Row -->
+    <div class="row">
+        <!-- Category Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Category Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Item Status Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Price Distribution -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Bid Price Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    // Daily Bids Chart
+    var dailyBidsCtx = document.getElementById('dailyBidsChart').getContext('2d');
+    var dailyBidsChart = new Chart(dailyBidsCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for data in daily_bids %}
+                    "{{ data.date }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Number of Bids',
+                data: [
+                    {% for data in daily_bids %}
+                        {{ data.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+                tension: 0.3
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // Daily Items Chart
+    var dailyItemsCtx = document.getElementById('dailyItemsChart').getContext('2d');
+    var dailyItemsChart = new Chart(dailyItemsCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for data in daily_items %}
+                    "{{ data.date }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'New Items',
+                data: [
+                    {% for data in daily_items %}
+                        {{ data.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(54, 185, 204, 0.7)',
+                borderColor: 'rgba(54, 185, 204, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // Category Distribution Chart
+    var categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    var categoryChart = new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: [
+                {% for category, count in category_stats.items %}
+                    "{{ category }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for category, count in category_stats.items %}
+                        {{ count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(78, 115, 223, 0.7)',
+                    'rgba(54, 185, 204, 0.7)',
+                    'rgba(246, 194, 62, 0.7)',
+                    'rgba(231, 74, 59, 0.7)',
+                    'rgba(28, 200, 138, 0.7)',
+                    'rgba(90, 92, 105, 0.7)',
+                    'rgba(133, 135, 150, 0.7)',
+                    'rgba(100, 161, 157, 0.7)'
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+    
+    // Status Distribution Chart
+    var statusCtx = document.getElementById('statusChart').getContext('2d');
+    var statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for stat in status_stats %}
+                    "{{ stat.status|capfirst }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for stat in status_stats %}
+                        {{ stat.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(28, 200, 138, 0.7)',
+                    'rgba(246, 194, 62, 0.7)',
+                    'rgba(231, 74, 59, 0.7)'
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+    
+    // Price Distribution Chart
+    var priceCtx = document.getElementById('priceChart').getContext('2d');
+    var priceChart = new Chart(priceCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for range in price_ranges %}
+                    "{% if range.max %}${{ range.min }} - ${{ range.max }}{% else %}${{ range.min }}+{% endif %}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Number of Bids',
+                data: [
+                    {% for range in price_ranges %}
+                        {{ range.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(54, 185, 204, 0.7)',
+                borderColor: 'rgba(54, 185, 204, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
